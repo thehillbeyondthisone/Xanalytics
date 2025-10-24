@@ -5,763 +5,964 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Xanalytics · Live Analytics</title>
 <style>
+/* =========================
+   Base + Notum (default)
+   ========================= */
 :root{
-  --bg:#c8c8c8; --panel:#dcd9d4; --face:#cfcfcf; --ink:#000; --muted:#444; --hi:#fff; --lo:#3f3f3f; --shadow:#000;
-  --ok:#0a8a0a; --err:#b10000; --link:#003399;
+  /* Notum Blue — high contrast */
+  --bg:#0b1220;        /* page bg */
+  --panel:#111a2b;     /* panels */
+  --face:#152036;      /* content face */
+  --ink:#d7e6ff;       /* primary text */
+  --muted:#b7c6de;     /* secondary text (brighter for legibility) */
+  --hi:#2a4c9b;        /* bevel hi / outlines */
+  --lo:#060a14;        /* bevel low / deep bg */
+  --shadow:#000;
+
+  --ok:#40d57c; 
+  --err:#ff6b6b; 
+  --link:#a7c7ff;
+
+  --xp-bg:#0f2a1e; 
+  --axp-bg:#0e1f3e; 
+  --sk-bg:#3a2712; 
+  --rxp-bg:#2b1240;
+
+  --xp-bar:#4ade80; 
+  --axp-bar:#60a5fa; 
+  --sk-bar:#fb923c;
+
+  --btn-active-bg:#1e3256;
+  --focus:#9fc3ff;
+}
+
+body.xp{
+  /* Windows XP vibe, accessible */
+  --bg:#cfcfcf; --panel:#e6e3df; --face:#f3f2f1; --ink:#111; --muted:#333;
+  --hi:#fff; --lo:#646464; --shadow:#000;
+  --ok:#148814; --err:#b10000; --link:#003db8;
   --xp-bg:#e7ffe7; --axp-bg:#e7f0ff; --sk-bg:#fff4e2; --rxp-bg:#f4e7ff;
   --xp-bar:#1ea31e; --axp-bar:#1a66d1; --sk-bar:#c27b17;
-  --btn-active-bg: #d8e8ff;
+  --btn-active-bg:#d8e8ff;
 }
-body.minimal{
-  --bg:#0b0e12; --panel:#12161c; --face:#0f141a; --ink:#e6eef7; --muted:#9aa4af; --hi:#1f2937; --lo:#0b0f14; --shadow:#000;
-  --ok:#22c55e; --err:#ef4444; --link:#60a5fa;
-  --xp-bg:#11361a; --axp-bg:#11263e; --sk-bg:#3e2a11; --rxp-bg:#2e133e;
-  --xp-bar: var(--ok); --axp-bar: var(--link); --sk-bar:#c27b17;
-  --btn-active-bg: #1f2937;
+
+body.monokai{
+  /* Monokai nudged for contrast */
+  --bg:#1e1f1c; --panel:#2a2b26; --face:#33342e; --ink:#f8f8f2; --muted:#e3e3d4;
+  --hi:#49483e; --lo:#11120f; --shadow:#000;
+  --ok:#a6e22e; --err:#f92672; --link:#b6f1ff;
+  --xp-bg:#1a2e1a; --axp-bg:#162238; --sk-bg:#3b2912; --rxp-bg:#271339;
+  --xp-bar:#a6e22e; --axp-bar:#66d9ef; --sk-bar:#fd971f;
+  --btn-active-bg:#3a3b33;
+  --focus:#dcdcae;
 }
+
 html,body{height:100%}
-body{margin:0;padding:10px;background:var(--bg);color:var(--ink);font:13px/1.35 "MS Sans Serif",Tahoma,Segoe UI,Arial,sans-serif;transition:background .2s,color .2s}
-a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
-.window{background:var(--face);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi), inset -2px -2px 0 var(--shadow), inset 2px 2px 0 #e9e9e9}
-body.minimal .window{box-shadow:none;border:1px solid var(--hi)}
-.titlebar{background:linear-gradient(90deg,#001a66,#0b6bd6);color:#fff;font-weight:bold;padding:5px 8px;display:flex;align-items:center;gap:8px}
-body.minimal .titlebar{background:#0f172a}
-.badge{background:#000;color:#fff;padding:1px 6px;border:1px solid #fff;font-weight:700}
-.content{padding:8px}
+body{
+  margin:0;padding:10px;background:var(--bg);color:var(--ink);
+  font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  transition:background .2s,color .2s
+}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Window + chrome */
+.window{background:var(--face);box-shadow:none;border:1px solid var(--hi);border-radius:10px}
+body.xp .window{box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi), inset -2px -2px 0 var(--shadow), inset 2px 2px 0 #e9e9e9;border-radius:0;border:none}
+.titlebar{background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff;font-weight:700;padding:6px 10px;display:flex;align-items:center;gap:10px;border-radius:10px 10px 0 0}
+body.xp .titlebar{background:linear-gradient(90deg,#001a66,#0b6bd6);border-radius:0}
+body.monokai .titlebar{background:#242520}
+.badge{background:#000;color:#fff;padding:2px 8px;border:1px solid #fff;font-weight:800;border-radius:6px}
+.content{padding:10px}
 .grid{display:grid;grid-template-columns:320px 1fr;gap:10px}
-.group{background:var(--panel);padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi);margin-bottom:10px}
-body.minimal .group{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
-.group h3{margin:0 0 6px 0;font-size:13px;font-weight:bold}
+
+.group{background:var(--panel);padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi);margin-bottom:10px;border-radius:10px}
+body.xp .group, body.monokai .group{box-shadow:none;border:1px solid var(--hi)}
+.group h3{margin:0 0 6px 0;font-size:13px;font-weight:800}
+
 .row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
 .small{font-size:12px;color:var(--muted)}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-.input,select{background:#fff;color:#000;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi);padding:3px 5px}
-body.minimal .input, body.minimal select{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
+
+.input, select{
+  background:#fff;color:#000;border:1px solid var(--hi);
+  padding:5px 7px;border-radius:8px
+}
+body.xp .input, body.xp select, body.monokai .input, body.monokai select{background:var(--face);color:var(--ink)}
 .input.w{width:160px}
-.btn{background:#ddd;color:#000;padding:3px 8px;cursor:pointer;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi)}
-.btn:active{border-top-color:var(--lo);border-left-color:var(--lo);border-right-color:var(--hi);border-bottom-color:var(--hi)}
-.btn.ghost{opacity:.85}
-.btn.alt{font-weight:bold}
-body.minimal .btn{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
-.drop{display:flex;align-items:center;justify-content:center;height:76px;text-align:center;background:#fff;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .drop{background:var(--face)}
-.drop.dragover{outline:1px dotted var(--ink)}
-.statusbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px;background:var(--panel);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .statusbar{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
-.dot{width:10px;height:10px;background:#777;display:inline-block;border:1px solid #000}
+
+.btn{
+  background:var(--face);color:var(--ink);padding:6px 10px;cursor:pointer;
+  border:1px solid var(--hi);border-radius:8px
+}
+.btn:active{filter:brightness(0.95)}
+.btn.ghost{opacity:.9}
+.btn.alt{font-weight:800}
+
+/* ===== XP theme: square edges + retro formatting ===== */
+body.xp { font-family: "MS Sans Serif", Tahoma, Segoe UI, Arial, sans-serif; }
+body.xp .window,
+body.xp .group,
+body.xp .statusbar,
+body.xp .table,
+body.xp .pane,
+body.xp .card,
+body.xp .chip,
+body.xp .segment,
+body.xp .btn,
+body.xp .input,
+body.xp select,
+body.xp .drop,
+body.xp .pill,
+body.xp .logList,
+body.xp .logItem,
+body.xp .modal,
+body.xp .modal .tabs button,
+body.xp .modal .panel { border-radius: 0 !important; }
+
+body.xp .btn,
+body.xp .input,
+body.xp select,
+body.xp .drop,
+body.xp .group,
+body.xp .table,
+body.xp .pane,
+body.xp .statusbar,
+body.xp .card,
+body.xp .chip,
+body.xp .logList,
+body.xp .logItem,
+body.xp .modal .panel {
+  box-shadow:
+    inset -1px -1px 0 var(--lo),
+    inset  1px  1px 0 var(--hi),
+    inset -2px -2px 0 var(--shadow),
+    inset  2px  2px 0 #e9e9e9 !important;
+  border: none !important;
+}
+body.xp :focus { outline: 1px dotted #000; outline-offset: 0; }
+
+.drop{
+  display:flex;align-items:center;justify-content:center;height:100px;text-align:center;
+  background:var(--face);padding:6px;border:1px dashed var(--hi);border-radius:10px; cursor: pointer;
+}
+.drop.dragover{outline:2px dashed var(--link);outline-offset:4px}
+
+.statusbar{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px;
+  background:var(--panel);border:1px solid var(--hi);border-radius:10px
+}
+.dot{width:10px;height:10px;background:#777;display:inline-block;border:1px solid #000;border-radius:50%}
 .dot.ok{background:var(--ok)} .dot.err{background:var(--err)}
-.table{background:#fff;color:#000;height:320px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .table{background:var(--face);color:var(--ink)}
+
+.table{
+  background:var(--face);color:var(--ink);height:320px;overflow:auto;padding:6px;
+  border:1px solid var(--hi);border-radius:10px
+}
 .table pre{margin:0;font-size:12px}
+
 .panes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pane{background:#fff;height:170px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .pane{background:var(--face)}
+.pane{
+  background:var(--face);height:170px;overflow:auto;padding:6px;
+  border:1px solid var(--hi);border-radius:10px
+}
 .pane pre{margin:0;font-size:12px}
+
 .path{max-width:260px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
-kbd{border:1px solid #000;padding:0 3px;background:#fff}
+kbd{border:1px solid #000;padding:0 3px;background:#fff;color:#000;border-radius:4px}
 .dim{color:#6f6f6f}
-.pill{display:inline-block;padding:0 6px;border:1px solid #000;font-weight:bold;background:#fff}
-body.minimal .pill{border-color:var(--hi); background: var(--panel);}
-.pill.keep{background:#eaf7ea}.pill.discard{background:#f8eaea}
+
+.pill{display:inline-block;padding:0 6px;border:1px solid var(--hi);font-weight:700;background:var(--panel);border-radius:999px}
+.pill.keep{background:#0e3c1f} .pill.discard{background:#3c0e0e}
 .pill.xp{background:var(--xp-bg)} .pill.axp{background:var(--axp-bg)} .pill.sk{background:var(--sk-bg)} .pill.rxp{background:var(--rxp-bg)}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #000;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .chip{background:var(--face);border:1px solid var(--hi);border-radius:10px}
-.kpiVal{font-weight:bold}.kpiSub{font-size:12px;color:#333}
-body.minimal .kpiSub{color:var(--muted)}
+
+.chip{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:var(--face);
+  border:1px solid var(--hi);border-radius:10px
+}
+.kpiVal{font-weight:800}.kpiSub{font-size:12px;color:var(--muted)}
+
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.meter{height:10px;background:#fff;border:1px solid #000;border-top-color:#fff;border-left-color:#fff;overflow:hidden}
-body.minimal .meter{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+.meter{height:10px;background:var(--face);border:1px solid var(--hi);border-radius:8px;overflow:hidden}
 .bar{height:100%;width:0%}
 .bar.xp{background:var(--xp-bar)}.bar.axp{background:var(--axp-bar)}.bar.sk{background:var(--sk-bar)}
+
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.card{background:#fff;border:1px solid #000;padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .card{background:var(--face);border:1px solid var(--hi);border-radius:10px}
+.card{background:var(--face);border:1px solid var(--hi);padding:8px;border-radius:10px}
 .card h4{margin:0 0 6px 0;font-size:12px}
 .metaRow{display:flex;justify-content:space-between;font-size:12px}
-.feed{background:#fff;border:1px solid #000;padding:6px;height:150px;overflow:auto;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .feed{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+
+.feed{background:var(--face);border:1px solid var(--hi);padding:6px;height:150px;overflow:auto;border-radius:8px}
 .feed .line{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-.feed .when{color:#666;margin-left:6px}
-body.minimal .feed .when{color: var(--muted);}
+.feed .when{color:var(--muted);margin-left:6px}
+
 .toolbar{display:flex;gap:6px;flex-wrap:wrap}
-.segment{display:inline-flex;border:1px solid #000;background:#fff}
-body.minimal .segment{border:1px solid var(--hi);border-radius:8px;background:var(--face)}
-.segment button{border:0;background:transparent;padding:3px 8px;cursor:pointer; color: var(--ink);}
+.segment{display:inline-flex;border:1px solid var(--hi);border-radius:8px;background:var(--face)}
+.segment button{border:0;background:transparent;padding:6px 10px;cursor:pointer;color:var(--ink)}
 .segment button.active{background:var(--btn-active-bg)}
+
 .styleSwitch{margin-left:auto;display:flex;align-items:center;gap:6px}
 .sumline{font-size:12px;margin-top:4px;color:var(--muted)}
-ul.instructions{margin: 4px 0 4px 16px; padding: 0; font-size:12px; color: var(--muted);}
-ul.instructions li { margin-bottom: 4px; }
-label span { cursor: help; }
+
+.logList{max-height:200px;overflow:auto;background:var(--face);border:1px solid var(--hi);padding:4px;margin-top:6px;border-radius:8px}
+.logItem{padding:4px;margin:2px 0;display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--hi);border-radius:6px}
+.logItem .info{flex:1;font-size:12px}
+.logItem .info .primary{font-weight:700}
+.logItem .info .secondary{color:var(--muted);font-size:11px}
+.logItem .btn{margin-left:8px}
+
+/* Left column as mega-drop target */
+#leftCol.dragover { outline: 2px dashed var(--link); outline-offset: 4px; }
+
+/* ===== Modal Instructions (XP-respectful, legible) ===== */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000;
+}
+.modal{
+  position:fixed; top:8%; left:50%; transform:translateX(-50%);
+  width:720px; max-width:96vw;
+  background:var(--face); color:var(--ink);
+  border:1px solid var(--hi);
+  border-radius:10px;
+  z-index:1001;
+  display:none;
+}
+.modal .title{
+  background:linear-gradient(90deg,#1e3a8a,#3b82f6);
+  color:#fff; padding:6px 10px; font-weight:800; display:flex; justify-content:space-between; align-items:center;
+}
+body.xp .modal .title{ background:linear-gradient(90deg,#001a66,#0b6bd6); }
+.modal .body{ display:flex; gap:8px; padding:8px; }
+.modal .tabs{
+  display:flex; flex-direction:column; gap:6px; min-width:200px;
+}
+.modal .tabs button{
+  text-align:left; padding:10px; border:1px solid var(--hi); background:var(--face); cursor:pointer; border-radius:8px; color:var(--ink); font-weight:600;
+}
+.modal .tabs button.active{ background:var(--btn-active-bg); }
+.modal .panel{
+  flex:1; background:var(--panel); border:1px solid var(--hi); padding:12px; border-radius:10px; max-height:60vh; overflow:auto;
+}
+.modal .panel h4{ margin:0 0 10px 0; font-size:15px; color:var(--ink); }
+.modal .panel p, .modal .panel li{ color:var(--ink); font-size:13px; }
+.modal .panel code{ font-size:12px; word-break:break-all; background:var(--face); padding:2px 4px; border:1px solid var(--hi); border-radius:4px; display:inline-block;}
+.modal .footer{ padding:8px; display:flex; justify-content:flex-end; gap:8px; }
+
+/* XP squaring for modal already handled above */
 </style>
 </head>
-<body>
+<body class="xp">
   <div class="window">
     <div class="titlebar">
       <span class="badge">XANALYTICS</span>
       <span>Live Analytics</span>
       <div class="styleSwitch small">
         Style:
-        <select id="styleSel" class="input">
-          <option value="classic">Classic</option>
-          <option value="minimal">Minimal</option>
+        <select id="styleSel" class="input" aria-label="Theme">
+          <option value="notum">Notum Blue</option>
+          <option value="xp" selected>XP</option>
+          <option value="monokai">Monokai</option>
         </select>
       </div>
     </div>
     <div class="content">
       <div class="grid">
-        <section>
+        <section id="leftCol">
           <div class="group">
             <h3>Source</h3>
-            <div class="drop" id="drop" tabindex="0">
+            <div class="drop" id="drop" tabindex="0" aria-label="Drop log file here">
               <div>
-                <div style="font-weight:800">Drop log file here</div>
-                <div class="small">Quick and easy backup method</div>
+                <div style="font-weight:800;font-size:15px">Drop <span class="mono">Log.txt</span> here</div>
+                <div class="small">…or click to browse</div>
               </div>
             </div>
             <div id="fileInfo" class="small" style="display:none;margin-top:6px"></div>
-            <div id="folderInfo" class="small" style="display:none;margin-top:6px;padding:6px;background:var(--xp-bg);border:1px solid var(--ok)"></div>
+
+            <div class="small" style="margin-top:8px;padding:6px;background:var(--panel);">
+              📁 Typical path:<br>
+              <code>C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[GUID]\Anarchy Online\Prefs\[Account]\[Character]\Chat\Windows\Window[N]\Log.txt</code>
+            </div>
+
             <div class="toolbar" style="margin-top:6px">
-              <button class="btn alt" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Find My Logs</button>
-              <button class="btn" id="btnAttach" title="Select a single log file manually">Browse Files</button>
+              <button class="btn alt" id="btnInstructions" title="How to find and attach the log">❓ Instructions</button>
+              <button class="btn" id="btnAttach" title="Browse for log file">Browse Files</button>
             </div>
             <div class="toolbar" style="margin-top:6px">
-              <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
-              <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
-              <button class="btn ghost" id="btnReset" title="Clear all statistics and start fresh">Reset</button>
+              <label><input type="checkbox" id="autoscrollChk" checked> Autoscroll</label>
+              <button class="btn" id="btnReset">Reset Session</button>
             </div>
-          </div>
-          
-          <div class="group">
-            <h3>Instructions</h3>
-            <ul class="instructions">
-                <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
-                <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
-                <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
-            </ul>
           </div>
 
           <div class="group">
-            <h3>Settings</h3>
+            <h3>Filters</h3>
+            <div class="row"><label><input type="checkbox" id="normalizeVisibleChk"> Renormalize % to visible</label></div>
+            <div class="row"><label><input type="checkbox" id="dimDiscardedOnlyChk"> Dim 'discarded only' (0 kept)</label></div>
             <div class="row">
-              <label><input id="inclDiscarded" type="checkbox" checked/> Base % on all events</label>
-            </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Percentages include both kept and discarded items in the calculation</div>
-
-            <div class="row">
-              <label><input id="normalizeVisible" type="checkbox"/> Renormalize % to visible</label>
-            </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Recalculates % so visible rows add up to 100% (useful after filtering)</div>
-
-            <div class="row">
-              <label><input id="dimDiscardedOnly" type="checkbox" checked/> Dim discarded-only rows</label>
-            </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Makes items you've never kept less prominent in the table</div>
-
-            <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
-
-            <div class="row">
-              <label>Rarity</label>
-              <select id="rarityFilter" class="input">
+              <label>Rarity:</label>
+              <select id="rarityFilterSel" class="input">
                 <option value="all">All</option>
+                <option value="common">Common+</option>
                 <option value="uncommon">Uncommon+</option>
                 <option value="rare">Rare+</option>
-                <option value="epic">Epic</option>
+                <option value="legendary">Legendary+</option>
               </select>
             </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter by minimum rarity level (hides common items when set higher)</div>
-
             <div class="row">
-              <label>Sort by</label>
-              <select id="eventSortBy" class="input">
-                <option value="events">Events</option>
-                <option value="percent">Percent</option>
-                <option value="kept">Kept</option>
-                <option value="discarded">Discarded</option>
-                <option value="name">Name</option>
-                <option value="last">Last Seen</option>
-              </select>
-              <select id="eventSortDir" class="input">
-                <option value="desc">Desc</option>
-                <option value="asc">Asc</option>
-              </select>
+              <label>Min Events:</label>
+              <input type="number" id="eventMinEventsInp" class="input" value="0" min="0" style="width:80px">
             </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Choose how to sort the metrics table</div>
-
             <div class="row">
-              <input id="eventSearch" class="input w" placeholder="Search event or source…"/>
+              <label>Search:</label>
+              <input type="text" id="eventSearchInp" class="input w" placeholder="name filter...">
             </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter table by item name or source (e.g., mob name)</div>
+          </div>
 
-            <div class="row">
-              <label>Min events</label>
-              <input id="eventMinEvents" type="number" class="input" value="0" style="width:70px"/>
+          <div class="group">
+            <h3>XP Tracking</h3>
+            <div class="row small">
+              <label><input type="checkbox" id="fxp" checked> XP</label>
+              <label><input type="checkbox" id="faxp" checked> Alien XP</label>
+              <label><input type="checkbox" id="fsk" checked> SK</label>
+              <label><input type="checkbox" id="frxp"> Research</label>
             </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Hide items seen fewer than this many times</div>
+            <div id="xpDisplay"></div>
+          </div>
 
-            <div class="row">
-              <span class="segment">
-                <button id="viewAll" class="active" title="Show all items">All</button>
-                <button id="viewKept" title="Show only items that have been kept at least once">Kept</button>
-                <button id="viewDiscarded" title="Show only items that have been discarded at least once">Discarded</button>
-                <button id="viewDiscardedOnly" title="Show only items that you have discarded but never kept.">Discarded-only</button>
-              </span>
+          <div class="statusbar">
+            <div class="small">
+              <span class="dot" id="statusDot"></span>
+              <span id="statusText">Idle</span>
             </div>
-            <div class="small" style="margin-left:20px;margin-top:2px">Filter by whether you kept, discarded, or both</div>
+            <div class="small mono" id="metricsText">0 lines</div>
+            <div class="small" style="margin-left:auto">
+              <a href="#" id="exportCSV">Export CSV</a> · 
+              <a href="#" id="exportState">Export State</a>
+            </div>
           </div>
         </section>
 
         <section>
           <div class="group">
-            <h3>Metrics Table</h3>
-            <div class="table" id="table"><pre>(waiting for file…)</pre></div>
-            <div class="sumline" id="sumLine">Visible % sum: —</div>
+            <h3>Events</h3>
+            <div class="toolbar">
+              <div class="segment" role="tablist" aria-label="View">
+                <button id="viewAll" class="active" aria-selected="true">All</button>
+                <button id="viewKept">Kept</button>
+                <button id="viewDiscarded">Discarded</button>
+                <button id="viewDiscardedOnly">Discarded Only</button>
+              </div>
+              <div class="segment" role="tablist" aria-label="Sort">
+                <button id="sortName">Name</button>
+                <button id="sortEvents">Events</button>
+                <button id="sortPercent" class="active" aria-selected="true">Percent</button>
+              </div>
+              <button class="btn" id="toggleSortDir" title="Toggle sort direction">↓</button>
+            </div>
+            <div id="eventTable" class="table" aria-live="polite"></div>
           </div>
 
           <div class="group">
-            <h3>XP Metrics</h3>
-            <div class="kpis">
-              <div class="chip"><span class="pill xp">XP</span>
-                <div><div><span id="xpTotal" class="kpiVal">0</span></div>
-                <div class="kpiSub"><span id="xpRate10">0/hr</span> · <span id="xpRateSess">0/hr</span> · last <span id="xpLast">0</span></div></div>
-              </div>
-              <div class="chip"><span class="pill axp">AXP</span>
-                <div><div><span id="axpTotal" class="kpiVal">0</span></div>
-                <div class="kpiSub"><span id="axpRate10">0/hr</span> · <span id="axpRateSess">0/hr</span> · last <span id="axpLast">0</span></div></div>
-              </div>
-              <div class="chip"><span class="pill sk">SK</span>
-                <div><div><span id="skTotal" class="kpiVal">0</span></div>
-                <div class="kpiSub"><span id="skRate10">0/hr</span> · <span id="skRateSess">0/hr</span> · last <span id="skLast">0</span></div></div>
-              </div>
-              <div class="chip"><span class="pill rxp">Research</span>
-                <div><div><span id="rxpTotal" class="kpiVal">0</span></div>
-                <div class="kpiSub"><span id="rxpRate10">0/hr</span> · <span id="rxpRateSess">0/hr</span> · last <span id="rxpLast">0</span></div></div>
-              </div>
-            </div>
-
-            <div class="cards" style="margin-top:8px">
-              <div class="card">
-                <h4>XP goal</h4>
-                <div class="meter"><div class="bar xp" id="barXP"></div></div>
-                <div class="metaRow"><span id="xpNeedLabel" class="small">—</span><span id="xpETA" class="small">ETA —</span></div>
-                <div class="row"><input id="xpNeed" class="input w" type="number" placeholder="Enter XP needed…"/></div>
-              </div>
-              <div class="card">
-                <h4>AXP goal</h4>
-                <div class="meter"><div class="bar axp" id="barAXP"></div></div>
-                <div class="metaRow"><span id="axpNeedLabel" class="small">—</span><span id="axpETA" class="small">ETA —</span></div>
-                <div class="row"><input id="axpNeed" class="input w" type="number" placeholder="Enter AXP needed…"/></div>
-              </div>
-              <div class="card">
-                <h4>SK goal</h4>
-                <div class="meter"><div class="bar sk" id="barSK"></div></div>
-                <div class="metaRow"><span id="skNeedLabel" class="small">—</span><span id="skETA" class="small">ETA —</span></div>
-                <div class="row"><input id="skNeed" class="input w" type="number" placeholder="Enter SK needed…"/></div>
-              </div>
-            </div>
-
-            <div class="metaRow" style="margin-top:6px">
-              <span class="small" id="xpUptime">Uptime — 0m</span>
-              <span class="small" id="xpEvents">XP events — 0</span>
-            </div>
-
-            <div class="feed" id="xpFeed" style="margin-top:6px"><div class="small dim">(XP feed populates as you tail)</div></div>
+            <h3>Recent Activity</h3>
+            <div id="activityFeed" class="feed" aria-live="polite"></div>
           </div>
         </section>
       </div>
+    </div>
+  </div>
 
-      <div class="statusbar">
-        <div class="small">Xanalytics — local only</div>
-        <div class="small" style="display:flex;align-items:center;gap:8px">
-          <span class="dot" id="dot"></span><span id="statusText">Idle</span>
-          <span id="metricsInline" class="small">lines=0 hits=0 misses=0 rot=0 err=0</span>
-        </div>
-        <div class="small"><a href="#" id="exportState">Export state</a></div>
+  <!-- Instructions Modal -->
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="modal" id="instructionsModal" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
+    <div class="title">
+      <div id="instrTitle">Xanalytics · Instructions</div>
+      <button class="btn" id="modalClose" aria-label="Close">Close</button>
+    </div>
+    <div class="body">
+      <div class="tabs" role="tablist" aria-orientation="vertical">
+        <button class="active" id="tabWhere" aria-controls="panelWhere" aria-selected="true">Where are logs?</button>
+        <button id="tabAttach" aria-controls="panelAttach" aria-selected="false">How to attach</button>
       </div>
+      <div class="panel" id="panelWhere">
+        <h4>Find your AO chat logs</h4>
+        <p>Typical location (copy/paste into Explorer’s path bar):</p>
+        <p><code>C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[GUID]\Anarchy Online\Prefs\[Account]\[Character]\Chat\Windows\Window[N]\Log.txt</code></p>
+        <ol style="margin-left:18px">
+          <li>Press <kbd>Windows</kbd>+<kbd>R</kbd></li>
+          <li>Type <span class="mono">%localappdata%\Funcom</span> and press Enter</li>
+          <li>Open <span class="mono">Anarchy Online</span> → your <span class="mono">[GUID]</span></li>
+          <li>Then <span class="mono">Anarchy Online</span> → <span class="mono">Prefs</span> → your <span class="mono">[Account]</span> → <span class="mono">[Character]</span> → <span class="mono">Chat\Windows</span></li>
+          <li>Pick the <span class="mono">Window[N]\Log.txt</span> you actually log to (often <span class="mono">Window6</span>)</li>
+        </ol>
+        <p>Tip: ensure the log window is enabled in-game so new lines are written.</p>
+      </div>
+      <div class="panel" id="panelAttach" hidden>
+        <h4>Attach your log to Xanalytics</h4>
+        <ol style="margin-left:18px">
+          <li><b>Drag & drop:</b> Grab <span class="mono">Log.txt</span> from Explorer and drop it anywhere in the big “Drop Log.txt here” card (or anywhere in the left column—watch the dashed highlight).</li>
+          <li><b>Click to browse:</b> Click the drop card; your browser’s file picker will open. Select <span class="mono">Log.txt</span>.</li>
+          <li><b>Live tail:</b> If your browser gives us a file <em>handle</em> (supported in modern Chromium), we’ll tail new lines as the game writes them.</li>
+        </ol>
+        <p>Privacy: processing happens locally in your browser.</p>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn alt" id="modalDone">Done</button>
     </div>
   </div>
 
 <script>
 (function(){
-  const short=(s,n=120)=>{if(s==null)return"";s=String(s);return s.length<=n?s:s.slice(0,n-1)+'…'};
-  const pad=(s,w)=>{s=s==null?'':String(s);if(s.length>=w)return s.slice(0,w);return s+' '.repeat(w-s.length)};
-  const htmlDecode=s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value};
-  const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const fmt=n=>Number(n||0).toLocaleString();
-  const toNum=s=>{if(s==null)return 0;if(typeof s==='number')return Math.floor(s);return parseInt(String(s).replace(/[,_\s]/g,''),10)||0};
-  const now=()=>Date.now();
+'use strict';
 
-  const styleSel=document.getElementById('styleSel');
+/* =========================
+   DOM refs
+   ========================= */
+const drop=document.getElementById('drop');
+const leftCol=document.getElementById('leftCol');
+const fileInfo=document.getElementById('fileInfo');
+const btnAttach=document.getElementById('btnAttach');
+const autoscrollChk=document.getElementById('autoscrollChk');
+const btnReset=document.getElementById('btnReset');
+const exportCSV=document.getElementById('exportCSV');
+const exportStateLink=document.getElementById('exportState');
+const normalizeVisibleChk=document.getElementById('normalizeVisibleChk');
+const dimDiscardedOnlyChk=document.getElementById('dimDiscardedOnlyChk');
+const rarityFilterSel=document.getElementById('rarityFilterSel');
+const eventMinEventsInp=document.getElementById('eventMinEventsInp');
+const eventSearchInp=document.getElementById('eventSearchInp');
+const eventTable=document.getElementById('eventTable');
+const activityFeed=document.getElementById('activityFeed');
+const statusDot=document.getElementById('statusDot');
+const statusText=document.getElementById('statusText');
+const metricsText=document.getElementById('metricsText');
+const viewAll=document.getElementById('viewAll');
+const viewKept=document.getElementById('viewKept');
+const viewDiscarded=document.getElementById('viewDiscarded');
+const viewDiscardedOnly=document.getElementById('viewDiscardedOnly');
+const sortName=document.getElementById('sortName');
+const sortEvents=document.getElementById('sortEvents');
+const sortPercent=document.getElementById('sortPercent');
+const toggleSortDir=document.getElementById('toggleSortDir');
+const xpDisplay=document.getElementById('xpDisplay');
+const fxp=document.getElementById('fxp');
+const faxp=document.getElementById('faxp');
+const fsk=document.getElementById('fsk');
+const frxp=document.getElementById('frxp');
+const styleSel=document.getElementById('styleSel');
 
-  const btnBrowseFolder = document.getElementById('btnBrowseFolder');
-  const btnAttach = document.getElementById('btnAttach');
-  const btnReload = document.getElementById('btnReload');
-  const btnExportCSV = document.getElementById('btnExportCSV');
-  const btnReset  = document.getElementById('btnReset');
-  const folderInfo = document.getElementById('folderInfo');
+/* Instructions modal refs */
+const btnInstructions=document.getElementById('btnInstructions');
+const modal=document.getElementById('instructionsModal');
+const backdrop=document.getElementById('modalBackdrop');
+const modalClose=document.getElementById('modalClose');
+const modalDone=document.getElementById('modalDone');
+const tabWhere=document.getElementById('tabWhere');
+const tabAttach=document.getElementById('tabAttach');
+const panelWhere=document.getElementById('panelWhere');
+const panelAttach=document.getElementById('panelAttach');
 
-  const fileInfo = document.getElementById('fileInfo');
+/* =========================
+   State
+   ========================= */
+const state = {
+  fileHandle: null,
+  fileObj: null,
+  offset: 0,
+  tailTimer: null,
+  reading: false,
+  paused: false
+};
 
-  const parsedLog = document.getElementById('parsedLog');
-  const rawPane = document.getElementById('rawPane');
-  const debugPane = document.getElementById('debugPane');
-  const tableEl = document.getElementById('table');
-  const metricsInline = document.getElementById('metricsInline');
-  const dot = document.getElementById('dot');
+const stats = {};
+let totalKept = 0, totalDiscarded = 0;
+let linesRead = 0, parseHits = 0, parseMisses = 0, rotationCount = 0, readErrors = 0;
+const debugLog = [];
+const rawLines = [];
+let eventView = 'all';
+let sortBy = 'percent';
+let sortDir = 'desc';
+const xpInclude = { xp: true, axp: true, sk: true, rxp: false };
+const xpState = { xp: 0, axp: 0, sk: 0, rxp: 0, goals: { xp: 0, axp: 0, sk: 0 } };
 
-  const inclDiscardedChk = document.getElementById('inclDiscarded');
-  const normalizeVisibleChk = document.getElementById('normalizeVisible');
-  const dimDiscardedOnlyChk = document.getElementById('dimDiscardedOnly');
-  const rarityFilterSel = document.getElementById('rarityFilter');
-
-  const eventSortBySel = document.getElementById('eventSortBy');
-  const eventSortDirSel = document.getElementById('eventSortDir');
-  const eventSearchInp = document.getElementById('eventSearch');
-  const eventMinEventsInp = document.getElementById('eventMinEvents');
-
-  const viewAll=document.getElementById('viewAll');
-  const viewKept=document.getElementById('viewKept');
-  const viewDiscarded=document.getElementById('viewDiscarded');
-  const viewDiscardedOnly=document.getElementById('viewDiscardedOnly');
-
-  const sumLine=document.getElementById('sumLine');
-
-  const fxp=document.getElementById('fxp'), faxp=document.getElementById('faxp'), fsk=document.getElementById('fsk'), frxp=document.getElementById('frxp');
-
-  const xpd={
-    total:{xp:gid('xpTotal'),axp:gid('axpTotal'),sk:gid('skTotal'),rxp:gid('rxpTotal')},
-    rate10:{xp:gid('xpRate10'),axp:gid('axpRate10'),sk:gid('skRate10'),rxp:gid('rxpRate10')},
-    rateS:{xp:gid('xpRateSess'),axp:gid('axpRateSess'),sk:gid('skRateSess'),rxp:gid('rxpRateSess')},
-    last:{xp:gid('xpLast'),axp:gid('axpLast'),sk:gid('skLast'),rxp:gid('rxpLast')},
-    need:{xp:gid('xpNeed'),axp:gid('axpNeed'),sk:gid('skNeed')},
-    needL:{xp:gid('xpNeedLabel'),axp:gid('axpNeedLabel'),sk:gid('skNeedLabel')},
-    eta:{xp:gid('xpETA'),axp:gid('axpETA'),sk:gid('skETA')},
-    bar:{xp:gid('barXP'),axp:gid('barAXP'),sk:gid('barSK')},
-    uptime:gid('xpUptime'),events:gid('xpEvents'),feed:gid('xpFeed')
-  };
-  function gid(id){return document.getElementById(id)}
-
-  const state={fileHandle:null,fileObj:null,offset:0,tailTimer:null,reading:false,paused:false,startTs:0};
-  let linesRead=0,parseHits=0,parseMisses=0,rotationCount=0,readErrors=0,totalKept=0,totalDiscarded=0;
-  const stats={}; const debugLog=[]; const rawLines=[]; let eventView='all';
-
-  const xpInclude={xp:true,axp:true,sk:true,rxp:true};
-  const rxXP=/You\s+(?:gained|received)\s+([\d,]+)\s+(?:XP|experience)\b(?!.*Alien)/i;
-  const rxAXP=/Alien\s+Experience\s+Points.*?([\d,]+)/i;
-  const rxSK=/(?:You\s+gained\s+)?([\d,]+)\s+(?:Shadowknowledge|SK)\b/i;
-  const rxRXP=/([\d,]+)\s+of\s+your\s+XP\s+were\s+allocated\s+to\s+your\s+personal\s+research/i;
-
-  const xpState={start:null,totals:{xp:0,axp:0,sk:0,rxp:0},last:{xp:0,axp:0,sk:0,rxp:0},events:0,samples:{xp:[],axp:[],sk:[],rxp:[]},sess:{xp:0,axp:0,sk:0,rxp:0},goals:{xp:0,axp:0,sk:0}};
-
-  const rxItemref=/<a\s+href\s*=\s*"itemref:\/\/(\d+)(?:\/(\d+))?(?:\/(\d+))?">(.*?)<\/a>/ig;
-  const rxAction=/(?:^|\W)(deleted|looted|picked up|picked|received|acquired|added to your inventory|added)(?:\W|$)/i;
-  const rxLoose=/\b(deleted|looted|picked up|picked|received|acquired|added)\b/i;
-  const rxSource=/\bfrom\s+([A-Za-z0-9 '\-\.]{2,80})/i;
-
-  function rarityOf(p){if(p>=5)return'Common';if(p>=1)return'Uncommon';if(p>=0.2)return'Rare';return'Epic'}
-
-  function pushDebug(s){
-    const t=`[${new Date().toISOString()}] ${s}`; debugLog.push(t); if(debugPane && debugPane.style.display!=='none'){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent+=(pre.textContent?'\n':'')+t; debugPane.innerHTML=''; debugPane.appendChild(pre); debugPane.scrollTop=debugPane.scrollHeight;}
+/* =========================
+   Modal helpers
+   ========================= */
+function openModal(){
+  backdrop.style.display='block';
+  modal.style.display='block';
+  activateTab('where');
+  modalClose.focus();
+}
+function closeModal(){
+  modal.style.display='none';
+  backdrop.style.display='none';
+}
+function activateTab(which){
+  if(which==='where'){
+    tabWhere.classList.add('active'); tabWhere.setAttribute('aria-selected','true');
+    tabAttach.classList.remove('active'); tabAttach.setAttribute('aria-selected','false');
+    panelWhere.hidden=false; panelAttach.hidden=true;
+  }else{
+    tabAttach.classList.add('active'); tabAttach.setAttribute('aria-selected','true');
+    tabWhere.classList.remove('active'); tabWhere.setAttribute('aria-selected','false');
+    panelAttach.hidden=false; panelWhere.hidden=true;
   }
-  function pushRaw(ln){
-    rawLines.push(ln); if(rawPane && rawPane.style.display!=='none'){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n'); rawPane.scrollTop=rawPane.scrollHeight;}
-  }
-  function pushParsed(tag,text){
-    if(!parsedLog) return;
-    const line=document.createElement('div'); line.className='line';
-    const pill=document.createElement('span'); pill.className='pill '+tag; pill.textContent=tag.toUpperCase();
-    const span=document.createElement('span'); span.textContent=' '+text;
-    line.appendChild(pill); line.appendChild(span);
-    parsedLog.appendChild(line); parsedLog.scrollTop=parsedLog.scrollHeight;
-  }
+}
+btnInstructions.addEventListener('click', openModal);
+modalClose.addEventListener('click', closeModal);
+modalDone.addEventListener('click', closeModal);
+backdrop.addEventListener('click', closeModal);
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+tabWhere.addEventListener('click', ()=>activateTab('where'));
+tabAttach.addEventListener('click', ()=>activateTab('attach'));
 
-  function xpPush(key,val){
-    const t=now();
-    xpState.totals[key]+=val; xpState.last[key]=val; xpState.events++; xpState.samples[key].push({t,v:val}); xpState.sess[key]+=val;
-    const cut=t-10*60*1000; ['xp','axp','sk','rxp'].forEach(k=>{const a=xpState.samples[k]; while(a.length && a[0].t<cut) a.shift();});
-    refreshXPUI(); pushXPFeed(key,val,t);
-  }
-  function rate10(k){const a=xpState.samples[k]; if(!a.length) return 0; const sum=a.reduce((x,y)=>x+y.v,0); const span=(a[a.length-1].t-a[0].t)/1000||1; return sum/span*3600}
-  function rateSess(k){if(!xpState.start)return 0; const h=(now()-xpState.start)/3600000; return h>0?xpState.sess[k]/h:0}
-  function setBar(el,need,have,lbl){const N=toNum(need),H=toNum(have); if(!N){el.style.width='0%'; if(lbl) lbl.textContent='—'; return} const pct=Math.max(0,Math.min(100,H/N*100)); el.style.width=pct.toFixed(2)+'%'; if(lbl) lbl.textContent=`${fmt(H)} / ${fmt(N)} (${pct.toFixed(1)}%)`}
-  function etaStr(need,have,perHour){const rem=Math.max(0,toNum(need)-toNum(have)); if(!rem||!perHour)return'ETA —'; const hours=rem/perHour; const h=Math.floor(hours), m=Math.round((hours-h)*60); return `ETA — ${h? h+'h ' : ''}${m}m`}
-  function refreshXPUI(){
-    ['xp','axp','sk','rxp'].forEach(k=>{ xpd.total[k].textContent=fmt(xpState.totals[k]); xpd.last[k].textContent=fmt(xpState.last[k]); xpd.rate10[k].textContent=fmt(Math.round(rate10(k)))+'/hr'; xpd.rateS[k].textContent=fmt(Math.round(rateSess(k)))+'/hr'; });
-    setBar(xpd.bar.xp,xpState.goals.xp,xpState.totals.xp,xpd.needL.xp);
-    setBar(xpd.bar.axp,xpState.goals.axp,xpState.totals.axp,xpd.needL.axp);
-    setBar(xpd.bar.sk,xpState.goals.sk,xpState.totals.sk,xpd.needL.sk);
-    xpd.eta.xp.textContent=etaStr(xpState.goals.xp,xpState.totals.xp,rate10('xp'));
-    xpd.eta.axp.textContent=etaStr(xpState.goals.axp,xpState.totals.axp,rate10('axp'));
-    xpd.eta.sk.textContent=etaStr(xpState.goals.sk,xpState.totals.sk,rate10('sk'));
-    if(xpState.start){const mins=Math.floor((now()-xpState.start)/60000); xpd.uptime.textContent=`Uptime — ${mins}m`;}
-    xpd.events.textContent=`XP events — ${fmt(xpState.events)}`;
-  }
-  function xpReset(){xpState.start=new Date(); xpState.totals={xp:0,axp:0,sk:0,rxp:0}; xpState.last={xp:0,axp:0,sk:0,rxp:0}; xpState.events=0; xpState.samples={xp:[],axp:[],sk:[],rxp:[]}; xpState.sess={xp:0,axp:0,sk:0,rxp:0}; refreshXPUI(); xpd.feed.innerHTML='<div class="small dim">(XP feed populates as you tail)</div>'}
-  function pushXPFeed(type,val,t){ if(!xpInclude[type]) return; const row=document.createElement('div'); row.className='line'; const pill=document.createElement('span'); pill.className='pill '+type; pill.textContent=type.toUpperCase(); const amt=document.createElement('span'); amt.textContent=' +'+fmt(val); const when=document.createElement('span'); when.className='when'; when.textContent=new Date(t).toLocaleTimeString(); row.appendChild(pill); row.appendChild(amt); row.appendChild(when); xpd.feed.prepend(row); while(xpd.feed.childNodes.length>40) xpd.feed.removeChild(xpd.feed.lastChild); }
+/* =========================
+   Core helpers
+   ========================= */
+function pushDebug(msg){ debugLog.push(`[${new Date().toISOString()}] ${msg}`); if (debugLog.length>100) debugLog.shift(); }
+function setReading(is){ state.reading=is; statusDot.className='dot ' + (is?'ok':''); statusText.textContent=is?'Reading...':'Idle'; }
+function fmt(n){ return n.toLocaleString(); }
+function esc(s){ return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toNum(v){ const n=parseInt(v,10); return isNaN(n)?0:n; }
+function rarityOf(p){ if(p>=10)return'Common'; if(p>=1)return'Uncommon'; if(p>=0.1)return'Rare'; return'Legendary'; }
 
-  function makeKey(h,l,n){ if((!h||h===0)&&(!l||l===0)){ let x=0; for(let i=0;i<n.length;i++){x=((x<<5)-x)+n.charCodeAt(i); x=x&x;} return 'N:'+Math.abs(x)+':'+n } return h+':'+l+':'+n }
-  function upsert(ev){ const key=makeKey(ev.high,ev.low,ev.name); let s=stats[key]; if(!s) s=stats[key]={key,name:ev.name,high:ev.high,low:ev.low,events:0,kept:0,discarded:0,minql:99999,maxql:0,sampleqls:[],lastSource:null,lastSeen:null}; if(ev.ql&&ev.ql>0){ if(ev.ql<s.minql)s.minql=ev.ql; if(ev.ql>s.maxql)s.maxql=ev.ql; if(s.sampleqls.length<6)s.sampleqls.push(ev.ql); } if(ev.isKept){s.kept++; totalKept++;} if(ev.isDiscarded){s.discarded++; totalDiscarded++;} s.events=s.kept+s.discarded; s.lastSource=ev.source||s.lastSource; s.lastSeen=new Date().toISOString(); }
+/* =========================
+   Tail: File System Access or file object
+   ========================= */
+async function startTailWithHandle(handle){
+  resetSession(false);
+  state.fileHandle=handle; state.fileObj=null;
+  const file=await handle.getFile();
+  fileInfo.textContent=`📁 ${file.name} (${fmt(file.size)} bytes) — Monitoring...`;
+  fileInfo.style.display='block';
+  pushDebug('START_TAIL_FSA: '+file.name);
+  await readNewLines();
+  if(state.tailTimer) clearInterval(state.tailTimer);
+  state.tailTimer=setInterval(readNewLines,1000);
+  setReading(true);
+}
 
-  function renderTable(){
-    const includeDiscardedInPct=inclDiscardedChk.checked;
-    let pctBase=(includeDiscardedInPct?(totalKept+totalDiscarded):totalKept)||1;
+function startTailWithFile(file){
+  resetSession(false);
+  state.fileObj=file; state.fileHandle=null;
+  fileInfo.textContent=`📁 ${file.name} (${fmt(file.size)} bytes) — One-time read`;
+  fileInfo.style.display='block';
+  pushDebug('START_TAIL_FILE: '+file.name);
+  readNewLines();
+  setReading(false);
+}
 
-    const q=(eventSearchInp.value||'').toLowerCase().trim();
-    const minEvents=Math.max(0,parseInt(eventMinEventsInp.value||'0',10));
-
-    let arr=Object.values(stats);
-    arr.forEach(s=>{ s.events=s.kept+s.discarded; s.percent=100*s.events/pctBase; s.rarity=rarityOf(s.percent); s.discardedOnly=(s.kept===0&&s.discarded>0); s.keptOnly=(s.discarded===0&&s.kept>0); });
-
-    const rf=rarityFilterSel.value;
-    arr=arr.filter(e=>rf==='all'|| (rf==='uncommon'?['Uncommon','Rare','Epic'].includes(e.rarity): rf==='rare'?['Rare','Epic'].includes(e.rarity): e.rarity==='Epic'));
-
-    if(eventView==='kept') arr=arr.filter(s=>s.kept>0);
-    if(eventView==='discarded') arr=arr.filter(s=>s.discarded>0);
-    if(eventView==='discardonly') arr=arr.filter(s=>s.discardedOnly);
-
-    arr=arr.filter(s=>s.events>=minEvents);
-    if(q) arr=arr.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.lastSource||'').toLowerCase().includes(q));
-
-    const visibleBase = normalizeVisibleChk.checked ? Math.max(1, arr.reduce((a,s)=>a+s.events,0)) : pctBase;
-
-    const sortBy=eventSortBySel.value, dir=eventSortDirSel.value==='asc'?1:-1;
-    arr.sort((a,b)=>{
-      const K={
-        events:[a.events,b.events],percent:[a.events/visibleBase,b.events/visibleBase],kept:[a.kept,b.kept],discarded:[a.discarded,b.discarded],
-        name:[a.name||'',b.name||''],last:[a.lastSeen?Date.parse(a.lastSeen):0,b.lastSeen?Date.parse(b.lastSeen):0]
-      }[sortBy];
-      if(sortBy==='name') return K[0].localeCompare(K[1])*dir;
-      if(K[0]===K[1]) return (a.name||'').localeCompare(b.name||'')*dir;
-      return (K[0]<K[1]?-1:1)*dir;
-    });
-
-    const H={name:36,events:7,kept:8,discarded:8,pct:7,rarity:10,ql:12,src:26};
-    const hdr=pad('Name',H.name)+pad('Events',H.events)+pad('Kept',H.kept)+pad('Discarded',H.discarded)+pad('%',H.pct)+pad('Rarity',H.rarity)+pad('QL',H.ql)+' Last Source | Last\n';
-    const sep='-'.repeat(H.name)+' '+ '-'.repeat(H.events-1)+' '+ '-'.repeat(H.kept-1)+' '+ '-'.repeat(H.discarded-1)+' '+ '-'.repeat(H.pct-1)+' '+ '-'.repeat(H.rarity-1)+' '+ '-'.repeat(H.ql-1)+' '+ '-'.repeat(H.src)+' '+'-----\n';
-    let html=`<pre class="mono">${esc(hdr+sep)}`;
-
-    let sumPct=0;
-    if(!arr.length){ html+=esc('(no rows match filters)\n'); }
-    else{
-      const dim=dimDiscardedOnlyChk.checked;
-      for(const s of arr){
-        const pct=(100*s.events/visibleBase); sumPct+=pct;
-        const ql=s.minql===99999?(s.sampleqls?.[0]??'-'):(s.minql===s.maxql?String(s.minql):`${s.minql}-${s.maxql}`);
-        const row= pad((s.name||'').slice(0,H.name),H.name)+
-                   pad(fmt(s.events),H.events)+
-                   pad(fmt(s.kept),H.kept)+
-                   pad(fmt(s.discarded),H.discarded)+
-                   pad(pct.toFixed(2),H.pct)+
-                   pad(s.rarity,H.rarity)+
-                   pad(ql,H.ql)+
-                   pad((s.lastSource||'-').slice(0,H.src),H.src)+' '+
-                   (s.lastSeen?new Date(s.lastSeen).toLocaleTimeString():'-');
-        html += (dim && s.discardedOnly) ? `<span class="dim">${esc(row)}</span>\n` : `${esc(row)}\n`;
-      }
+async function readNewLines(){
+  if(state.reading||state.paused) return;
+  state.reading=true;
+  try{
+    let text='';
+    if(state.fileHandle){
+      const file=await state.fileHandle.getFile();
+      if(file.size<state.offset){ rotationCount++; state.offset=0; pushDebug('FILE_ROTATION_DETECTED'); }
+      if(file.size===state.offset){ state.reading=false; return; }
+      const blob=file.slice(state.offset);
+      const buf=await blob.arrayBuffer();
+      text=new TextDecoder().decode(buf);
+      state.offset=file.size;
+    }else if(state.fileObj){
+      // NOTE: File objects from drag-drop are snapshots; they won't grow.
+      // We'll still read what's in it once.
+      const blob=state.fileObj.slice(state.offset);
+      const buf=await blob.arrayBuffer();
+      text=new TextDecoder().decode(buf);
+      state.offset+=blob.size;
     }
-    html+='</pre>';
-    tableEl.innerHTML=html;
-    sumLine.textContent = `Visible % sum: ${arr.length? (sumPct.toFixed(2)+'%'): '—'}`;
-  }
-
-  function parseLine(line){
-    linesRead++; pushRaw(line); pushDebug(`LINE_RX: ${short(line,140)}`);
-    let m=null;
-    if((m=line.match(rxAXP))){const v=toNum(m[1]);if(v){if(xpInclude.axp)pushParsed('axp','+'+fmt(v)+' AXP'); xpPush('axp',v);}}
-    else if((m=line.match(rxSK))){const v=toNum(m[1]);if(v){if(xpInclude.sk)pushParsed('sk','+'+fmt(v)+' SK'); xpPush('sk',v);}}
-    else if((m=line.match(rxRXP))){const v=toNum(m[1]);if(v){if(xpInclude.rxp)pushParsed('rxp','+'+fmt(v)+' Research'); xpPush('rxp',v);}}
-    else if((m=line.match(rxXP))){const v=toNum(m[1]);if(v){if(xpInclude.xp)pushParsed('xp','+'+fmt(v)+' XP'); xpPush('xp',v);}}
-
-    const body=line.replace(/^\s*\[[^\]]*\]\s*/, '').trim();
-    let matches=[],mm;
-    while((mm=rxItemref.exec(body))!==null){
-      const p1=parseInt(mm[1]||'0',10),p2=parseInt(mm[2]||'0',10),ql=parseInt(mm[3]||'0',10),raw=mm[4]||'';
-      let high=0,low=0; if(p2>0){high=Math.max(p1,p2);low=Math.min(p1,p2);} else {high=p1;low=0;}
-      matches.push({high,low,ql,name:htmlDecode(raw).trim()});
+    if(text){
+      const lines=text.split('\n');
+      lines.forEach(processLine);
     }
-    if(!matches.length){parseMisses++; updateMetrics(); return;}
+  }catch(e){ readErrors++; pushDebug('READ_ERR: '+e); }
+  state.reading=false;
+}
 
-    let actionM=body.match(rxAction); let action=actionM?actionM[1].toLowerCase():null;
-    if(!action){const lm=body.match(rxLoose); if(lm) action=lm[1].toLowerCase();}
-    if(!action) action='looted';
+/* =========================
+   Parsing
+   ========================= */
+function processLine(line){
+  line=line.trim(); if(!line) return;
+  rawLines.push(line); if(rawLines.length>500) rawLines.shift();
+  linesRead++;
 
-    let srcM=body.match(rxSource); let source=srcM?srcM[1].trim().replace(/[.,;:]$/,''):null;
+  const match=line.match(/You received (.+?)\./);
+  if(match){
+    const itemName=match[1].trim();
+    if(itemName.toLowerCase().includes('credit')){ parseMisses++; parseXPLine(line); return; }
+    parseHits++;
 
-    for(const it of matches){
-      const isDiscarded=/delete/i.test(action);
-      const isKept=/loot|pick|receiv|acquir|add/i.test(action);
-      const ev={name:it.name,ql:it.ql||0,high:it.high,low:it.low,isDiscarded,isKept,source,when:new Date().toISOString()};
-      parseHits++; pushParsed(isDiscarded?'discard':'keep', `${ev.name} | QL:${ev.ql||'-'} | src:${ev.source||'-'}`); upsert(ev);
+    const isDiscarded=line.toLowerCase().includes('discarded');
+    if(!stats[itemName]){
+      stats[itemName]={ name:itemName, kept:0, discarded:0, high:0, low:0, minql:99999, maxql:0, sampleqls:[], lastSource:'', lastSeen:'', rarity:'' };
     }
-    updateMetrics(); renderTable();
+    const stat=stats[itemName];
+    if(isDiscarded){ stat.discarded++; totalDiscarded++; } else { stat.kept++; totalKept++; }
+    stat.lastSeen=new Date().toISOString();
+
+    const qlMatch=line.match(/QL\s*(\d+)/i);
+    if(qlMatch){
+      const ql=parseInt(qlMatch[1]);
+      if(ql<stat.minql) stat.minql=ql;
+      if(ql>stat.maxql) stat.maxql=ql;
+      if(stat.sampleqls.length<5) stat.sampleqls.push(ql);
+    }
+
+    renderTable();
+    updateMetrics();
+    addActivity(itemName,isDiscarded);
+  } else {
+    parseMisses++;
   }
 
-  function updateMetrics(){ metricsInline.textContent=`lines=${linesRead} hits=${parseHits} misses=${parseMisses} rot=${rotationCount} err=${readErrors} kept=${totalKept} discarded=${totalDiscarded}`; }
+  parseXPLine(line);
+}
 
-  async function startTailWithHandle(handle){
-    state.fileHandle=handle; state.fileObj=null;
-    try{
-      const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
-      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${f.name} — Live tail (FSA) — Starting at EOF (${fmt(f.size)} bytes)`;
-      xpReset(); setReading(true);
-      if(state.tailTimer) clearInterval(state.tailTimer);
-      const poll=800;
-      state.tailTimer=setInterval(async ()=>{
-        if(!state.reading||state.paused) return;
-        try{
-          const nf=await handle.getFile(); const size=nf.size;
-          if(size>state.offset){const slice=nf.slice(state.offset,size); const txt=await slice.text(); state.offset=size; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
-          else if(size<state.offset){rotationCount++; state.offset=0; const slice=nf.slice(0,size); const txt=await slice.text(); state.offset=size; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
-        }catch(e){readErrors++; pushDebug('READ_HANDLE_ERR: '+e)}
-      },poll);
-    }catch(e){readErrors++; pushDebug('OPEN_HANDLE_ERR: '+e); alert('Failed to open file handle: '+e);}
-  }
-  async function startTailWithFile(file){
-    state.fileObj=file; state.fileHandle=null;
-    try{
-      const size=file.size; state.offset=size; state.startTs=now();
-      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${file.name} — Polling fallback — Starting at EOF (${fmt(size)} bytes)`;
-      xpReset(); setReading(true);
-      if(state.tailTimer) clearInterval(state.tailTimer);
-      const poll=1200;
-      state.tailTimer=setInterval(async ()=>{
-        if(!state.reading||state.paused) return;
-        try{
-          const buf=await file.arrayBuffer(); const txt=new TextDecoder().decode(buf);
-          if(txt.length>state.offset){const append=txt.slice(state.offset); state.offset=txt.length; append.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
-          else if(txt.length<state.offset){rotationCount++; state.offset=txt.length; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
-        }catch(e){readErrors++; pushDebug('POLL_READ_ERR: '+e)}
-      },poll);
-    }catch(e){readErrors++; pushDebug('START_FALLBACK_ERR: '+e)}
-  }
+function parseXPLine(line){
+  const xpMatch=line.match(/You got ([\d,]+) XP/i);
+  if(xpMatch && xpInclude.xp){ xpState.xp += parseInt(xpMatch[1].replace(/,/g,'')); refreshXPUI(); }
+  const axpMatch=line.match(/You got ([\d,]+) axp/i);
+  if(axpMatch && xpInclude.axp){ xpState.axp += parseInt(axpMatch[1].replace(/,/g,'')); refreshXPUI(); }
+  const skMatch=line.match(/You got ([\d,]+) SK/i);
+  if(skMatch && xpInclude.sk){ xpState.sk += parseInt(skMatch[1].replace(/,/g,'')); refreshXPUI(); }
+  const rxpMatch=line.match(/You got ([\d,]+) research points/i);
+  if(rxpMatch && xpInclude.rxp){ xpState.rxp += parseInt(rxpMatch[1].replace(/,/g,'')); refreshXPUI(); }
+}
 
-  function setReading(on){ state.reading=on&&!state.paused; document.getElementById('statusText').textContent=state.reading?'Parsing':(state.paused?'Paused':'Idle'); const dot=document.getElementById('dot'); dot.classList.toggle('ok',state.reading); dot.classList.toggle('err',!state.reading); updateMetrics(); }
-  function stopTail(){ if(state.tailTimer) clearInterval(state.tailTimer); state.tailTimer=null; state.reading=false; state.paused=false; setReading(false); }
+/* =========================
+   XP UI
+   ========================= */
+function refreshXPUI(){
+  let html='<div class="kpis">';
+  const types=[
+    { key:'xp', label:'XP', bg:'xp', show:xpInclude.xp },
+    { key:'axp', label:'Alien XP', bg:'axp', show:xpInclude.axp },
+    { key:'sk', label:'SK', bg:'sk', show:xpInclude.sk },
+    { key:'rxp', label:'Research', bg:'rxp', show:xpInclude.rxp }
+  ];
+  types.forEach(t=>{
+    if(!t.show) return;
+    const val=xpState[t.key];
+    html+=`<div class="chip">
+      <div>
+        <div class="kpiVal">${fmt(val)}</div>
+        <div class="kpiSub">${t.label}</div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
 
-  const dropEl=document.getElementById('drop');
-  dropEl.addEventListener('click',()=>btnAttach.click());
-  ['dragenter','dragover'].forEach(e=>dropEl.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();dropEl.classList.add('dragover')}));
-  ['dragleave','drop'].forEach(e=>dropEl.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();dropEl.classList.remove('dragover')}));
-  dropEl.addEventListener('drop',async e=>{
-    const f=e.dataTransfer?.files?.[0]; if(!f) return; resetSession(false);
-    const item=e.dataTransfer.items && e.dataTransfer.items[0];
-    if(item && item.getAsFileSystemHandle){try{const h=await item.getAsFileSystemHandle(); if(h && h.kind==='file') return startTailWithHandle(h);}catch{}}
-    startTailWithFile(f);
+  html+='<div style="margin-top:8px" class="small">';
+  html+=`<label>XP Goal: <input type="number" id="xpGoal" value="${xpState.goals.xp}" style="width:100px" class="input"></label> `;
+  html+=`<label>AXP Goal: <input type="number" id="axpGoal" value="${xpState.goals.axp}" style="width:100px" class="input"></label> `;
+  html+=`<label>SK Goal: <input type="number" id="skGoal" value="${xpState.goals.sk}" style="width:100px" class="input"></label>`;
+  html+='</div>';
+
+  xpDisplay.innerHTML=html;
+
+  const xpGoal=document.getElementById('xpGoal');
+  const axpGoal=document.getElementById('axpGoal');
+  const skGoal=document.getElementById('skGoal');
+  if(xpGoal) xpGoal.addEventListener('change',()=>{ xpState.goals.xp=toNum(xpGoal.value); refreshXPUI(); });
+  if(axpGoal) axpGoal.addEventListener('change',()=>{ xpState.goals.axp=toNum(axpGoal.value); refreshXPUI(); });
+  if(skGoal) skGoal.addEventListener('change',()=>{ xpState.goals.sk=toNum(skGoal.value); refreshXPUI(); });
+}
+function xpReset(){ xpState.xp=xpState.axp=xpState.sk=xpState.rxp=0; refreshXPUI(); }
+
+/* =========================
+   UI updates
+   ========================= */
+function updateMetrics(){ metricsText.textContent=`${fmt(linesRead)} lines | ${fmt(parseHits)} hits | ${fmt(parseMisses)} misses`; }
+
+function addActivity(itemName,isDiscarded){
+  const line=document.createElement('div');
+  line.className='line';
+  line.innerHTML=`<span class="pill ${isDiscarded?'discard':'keep'}">${isDiscarded?'DISCARD':'KEEP'}</span> ${esc(itemName)} <span class="when">${new Date().toLocaleTimeString()}</span>`;
+  activityFeed.insertBefore(line,activityFeed.firstChild);
+  while(activityFeed.children.length>50) activityFeed.removeChild(activityFeed.lastChild);
+  if(autoscrollChk && autoscrollChk.checked){ activityFeed.scrollTop=0; }
+}
+
+function renderTable(){
+  const normalize=normalizeVisibleChk.checked;
+  const dimDiscardedOnly=dimDiscardedOnlyChk.checked;
+  const rarityFilter=rarityFilterSel.value;
+  const minEvents=toNum(eventMinEventsInp.value);
+  const search=eventSearchInp.value.toLowerCase();
+
+  let items=Object.values(stats);
+
+  if(eventView==='kept'){ items=items.filter(s=>s.kept>0); }
+  else if(eventView==='discarded'){ items=items.filter(s=>s.discarded>0); }
+  else if(eventView==='discardonly'){ items=items.filter(s=>s.discarded>0 && s.kept===0); }
+
+  if(search){ items=items.filter(s=>s.name.toLowerCase().includes(search)); }
+  if(minEvents>0){ items=items.filter(s=>(s.kept+s.discarded)>=minEvents); }
+
+  const pctBase=normalize? items.reduce((sum,s)=>sum+s.kept+s.discarded,0) : (totalKept+totalDiscarded);
+
+  items.forEach(s=>{
+    const events=s.kept+s.discarded;
+    s.percent=pctBase>0? (100.0*events)/pctBase : 0;
+    s.rarity=rarityOf(s.percent);
   });
 
-  // Browse folder functionality - scan for character folders and their log files
-  async function scanPrefsFolder(dirHandle) {
-    const characters = [];
+  const rarityOrder={Common:0,Uncommon:1,Rare:2,Legendary:3};
+  if(rarityFilter!=='all'){
+    const key=rarityFilter.charAt(0).toUpperCase()+rarityFilter.slice(1);
+    const minRarity=rarityOrder[key];
+    items=items.filter(s=>rarityOrder[s.rarity]>=minRarity);
+  }
 
-    try {
-      // Scan for subdirectories (character folders)
-      for await (const entry of dirHandle.values()) {
-        if (entry.kind === 'directory') {
-          // Each folder should be a character name/ID
-          const logFiles = [];
-          try {
-            for await (const file of entry.values()) {
-              if (file.kind === 'file' && file.name.toLowerCase().endsWith('.txt')) {
-                logFiles.push({ handle: file, name: file.name });
-              }
+  if(sortBy==='name'){ items.sort((a,b)=>a.name.localeCompare(b.name)); }
+  else if(sortBy==='events'){ items.sort((a,b)=>(a.kept+a.discarded)-(b.kept+b.discarded)); }
+  else { items.sort((a,b)=>a.percent-b.percent); }
+  if(sortDir==='desc') items.reverse();
+
+  let html='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--panel);position:sticky;top:0">';
+  html+='<th style="text-align:left;padding:6px">Item</th>';
+  html+='<th style="text-align:right;padding:6px">Events</th>';
+  html+='<th style="text-align:right;padding:6px">Kept</th>';
+  html+='<th style="text-align:right;padding:6px">Disc.</th>';
+  html+='<th style="text-align:right;padding:6px">%</th>';
+  html+='<th style="text-align:left;padding:6px">Rarity</th>';
+  html+='</tr></thead><tbody>';
+
+  items.forEach(s=>{
+    const events=s.kept+s.discarded;
+    const isDim=dimDiscardedOnly && s.kept===0;
+    const rowStyle=isDim?'opacity:0.55':'';
+    html+=`<tr style="${rowStyle}">`;
+    html+=`<td style="padding:6px">${esc(s.name)}</td>`;
+    html+=`<td style="text-align:right;padding:6px">${fmt(events)}</td>`;
+    html+=`<td style="text-align:right;padding:6px">${fmt(s.kept)}</td>`;
+    html+=`<td style="text-align:right;padding:6px">${fmt(s.discarded)}</td>`;
+    html+=`<td style="text-align:right;padding:6px">${s.percent.toFixed(2)}%</td>`;
+    html+=`<td style="padding:6px"><span class="pill ${s.rarity.toLowerCase()}">${s.rarity}</span></td>`;
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  eventTable.innerHTML=html;
+}
+
+/* =========================
+   Drag & Drop / Picker UX
+   ========================= */
+// Left column as mega drop target
+['dragenter','dragover'].forEach(ev =>
+  leftCol.addEventListener(ev, e => { e.preventDefault(); leftCol.classList.add('dragover'); })
+);
+['dragleave','drop'].forEach(ev =>
+  leftCol.addEventListener(ev, () => leftCol.classList.remove('dragover'))
+);
+
+// Drop card handles files (try to get a FileSystemHandle for live tail)
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+drop.addEventListener('drop', async e => {
+  e.preventDefault();
+  drop.classList.remove('dragover');
+
+  try {
+    const items = e.dataTransfer && e.dataTransfer.items ? Array.from(e.dataTransfer.items) : [];
+    let handled = false;
+
+    // Modern Chromium: get a file handle from the drop for live tailing
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const getHandle = item.getAsFileSystemHandle || item.webkitGetAsEntry;
+        if (getHandle) {
+          // New API
+          if (item.getAsFileSystemHandle) {
+            const handle = await item.getAsFileSystemHandle();
+            if (handle && handle.kind === 'file') {
+              resetSession(true);
+              await startTailWithHandle(handle);
+              handled = true;
+              break;
             }
-          } catch (e) {
-            pushDebug('SCAN_CHAR_ERR: ' + e);
-          }
-
-          if (logFiles.length > 0) {
-            characters.push({
-              name: entry.name,
-              files: logFiles
-            });
+          } else {
+            // Fallback: webkitGetAsEntry path (not live-tail capable without more work)
+            const entry = item.webkitGetAsEntry();
+            if (entry && entry.isFile && entry.file) {
+              entry.file(file => { resetSession(true); startTailWithFile(file); });
+              handled = true;
+              break;
+            }
           }
         }
       }
-    } catch (e) {
-      pushDebug('SCAN_PREFS_ERR: ' + e);
     }
-    return characters;
+
+    if (!handled) {
+      // Old path: plain File (one-time read)
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        resetSession(true);
+        startTailWithFile(files[0]);
+      }
+    }
+  } catch (err) {
+    pushDebug('DROP_ERR: ' + err);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      resetSession(true);
+      startTailWithFile(files[0]);
+    }
   }
+});
 
-  btnBrowseFolder.addEventListener('click', async () => {
-    if (!('showDirectoryPicker' in window)) {
-      alert('Folder browsing requires Chrome/Edge browser. Please use "Browse Files" button instead.');
-      return;
-    }
-
+// Click drop area to browse (live tail if picker returns a handle)
+drop.addEventListener('click', async () => {
+  if ('showOpenFilePicker' in window) {
     try {
-      folderInfo.style.display = 'block';
-      folderInfo.innerHTML = '<div style="font-weight:bold;color:var(--muted)">📂 Navigate to your Anarchy Online Prefs folder...<br/><code style="font-size:10px">AppData\\Local\\Funcom\\Anarchy Online\\[UniqueID]\\Anarchy Online\\Prefs</code></div>';
+      const [handle] = await window.showOpenFilePicker({ multiple:false });
+      resetSession(true);
+      await startTailWithHandle(handle);
+    } catch {}
+  } else {
+    btnAttach.click();
+  }
+});
 
-      const dirHandle = await window.showDirectoryPicker();
-      folderInfo.innerHTML = '<div style="font-weight:bold">🔍 Scanning for character logs...</div>';
-
-      const characters = await scanPrefsFolder(dirHandle);
-
-      if (characters.length === 0) {
-        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">⚠️ No character folders with log files found.<br/><br/>Make sure you selected the "Prefs" folder that contains character subfolders.<br/><br/><span style="font-size:11px">Expected path:<br/><code>...\\Anarchy Online\\Prefs\\</code></span></div>';
-        setTimeout(() => { folderInfo.style.display = 'none'; }, 8000);
-        return;
-      }
-
-      // Display character list
-      let html = '<div style="font-weight:bold;margin-bottom:8px;font-size:13px">✨ Found ' + characters.length + ' character' + (characters.length > 1 ? 's' : '') + ' with logs:</div>';
-      html += '<div style="max-height:200px;overflow:auto;background:var(--face);padding:6px;border:1px solid var(--hi);border-radius:6px">';
-
-      characters.sort((a, b) => a.name.localeCompare(b.name));
-
-      characters.forEach((char, charIdx) => {
-        html += '<div style="margin:8px 0;padding:8px;background:var(--panel);border:1px solid var(--hi);border-radius:4px">';
-        html += '<div style="font-weight:bold;font-size:12px;margin-bottom:4px">👤 ' + esc(char.name) + '</div>';
-
-        char.files.forEach((file, fileIdx) => {
-          const dataIdx = charIdx + '_' + fileIdx;
-          html += '<div style="margin:4px 0 4px 16px">';
-          html += '<button class="btn" style="font-size:11px;padding:3px 10px;margin-right:6px" data-char-idx="' + charIdx + '" data-file-idx="' + fileIdx + '">Open</button>';
-          html += '<span style="font-size:11px;color:var(--muted)">📄 ' + esc(file.name) + '</span>';
-          html += '</div>';
-        });
-
-        html += '</div>';
-      });
-
-      html += '</div>';
-      html += '<div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Click "Open" to start monitoring (auto-starts on load)</div>';
-
-      folderInfo.innerHTML = html;
-
-      // Add click handlers to all Open buttons
-      folderInfo.querySelectorAll('button[data-char-idx]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const charIdx = parseInt(btn.getAttribute('data-char-idx'));
-          const fileIdx = parseInt(btn.getAttribute('data-file-idx'));
-          const selectedFile = characters[charIdx].files[fileIdx];
-          resetSession(true);
-          await startTailWithHandle(selectedFile.handle);
-          folderInfo.style.display = 'none';
-        });
-      });
-
-      // Save last directory to localStorage
-      try {
-        localStorage.setItem('xanalytics_last_folder', dirHandle.name);
-      } catch (e) {
-        // Ignore localStorage errors
-      }
-
+btnAttach.addEventListener('click', async () => {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({ multiple: false });
+      resetSession(true);
+      await startTailWithHandle(handle);
     } catch (e) {
-      if (e.name !== 'AbortError') {
-        pushDebug('FOLDER_PICK_ERR: ' + e);
-        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">❌ Error: ' + esc(e.message) + '</div>';
-        setTimeout(() => { folderInfo.style.display = 'none'; }, 5000);
-      } else {
-        folderInfo.style.display = 'none';
-      }
+      if (e.name !== 'AbortError') pushDebug('PICK_ERR: ' + e);
     }
-  });
-
-  btnAttach.addEventListener('click',async ()=>{
-    if('showOpenFilePicker' in window){
-      try{const [h]=await window.showOpenFilePicker({multiple:false}); resetSession(true); await startTailWithHandle(h); folderInfo.style.display='none';}catch(e){pushDebug('PICK_CANCEL/ERR: '+e)}
-    }else{
-      const input=document.createElement('input'); input.type='file';
-      input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f); folderInfo.style.display='none';}}); input.click();
-    }
-  });
-  btnReload.addEventListener('click',async ()=>{
-    try{
-      if(state.fileHandle){
-        const f=await state.fileHandle.getFile();
-        state.offset=f.size;
-        fileInfo.textContent=`📁 ${f.name} — Reloaded (FSA) — Now at EOF (${fmt(f.size)} bytes)`;
+  } else {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (file) {
+        resetSession(true);
+        startTailWithFile(file);
       }
-      else if(state.fileObj){
-        const buf=await state.fileObj.arrayBuffer();
-        state.offset=new TextDecoder().decode(buf).length;
-        fileInfo.textContent=`📁 ${state.fileObj.name} — Reloaded (File) — Now at EOF (${fmt(state.offset)} bytes)`;
-      }
-    }catch(e){pushDebug('RELOAD_ERR: '+e)}
-  });
-
-  btnExportCSV.addEventListener('click',()=>{
-    const includeDiscardedInPct=inclDiscardedChk.checked;
-    let pctBase=(includeDiscardedInPct?(totalKept+totalDiscarded):totalKept)||1;
-    const rows=[['High','Low','Name','Events','Kept','Discarded','Percent','Rarity','MinQL','MaxQL','Samples','LastSource','LastSeen']];
-    for(const k in stats){
-      const s=stats[k]; const events=s.kept+s.discarded; const pct=(100.0*events)/pctBase;
-      rows.push([s.high||0,s.low||0,s.name,events,s.kept,s.discarded,pct.toFixed(2)+'%',s.rarity||rarityOf(pct),s.minql===99999?'':s.minql,s.maxql||'',(s.sampleqls||[]).join(' '),s.lastSource||'',s.lastSeen||'']);
-    }
-    const csv=rows.map(r=>r.map(c=>{const t=String(c??''); return (t.includes('"')||t.includes(',')||t.includes('\n'))?`"${t.replace(/"/g,'""')}"`:t}).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='xanalytics_session.csv'; a.click(); URL.revokeObjectURL(url);
-
-    // Show confirmation
-    const origText = btnExportCSV.textContent;
-    btnExportCSV.textContent = 'Exported!';
-    btnExportCSV.style.background = 'var(--ok)';
-    btnExportCSV.style.color = '#fff';
-    setTimeout(() => {
-      btnExportCSV.textContent = origText;
-      btnExportCSV.style.background = '';
-      btnExportCSV.style.color = '';
-    }, 2000);
-  });
-
-  function exportState(){
-    const prefs={
-      inclDiscarded:inclDiscardedChk.checked, normalizeVisible:normalizeVisibleChk.checked, dimDiscardedOnly:dimDiscardedOnlyChk.checked,
-      rarity:rarityFilterSel.value, sortBy:eventSortBySel.value, sortDir:eventSortDirSel.value,
-      search:eventSearchInp.value, minEvents:toNum(eventMinEventsInp.value), view:eventView,
-      xpInclude:{...xpInclude}, style:styleSel.value
-    };
-    const events=Object.values(stats);
-    const out={ when:new Date().toISOString(), totals:{totalKept,totalDiscarded,linesRead,parseHits,parseMisses,rotationCount,readErrors}, prefs, events, xp:xpState };
-    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='xanalytics_state.json'; a.click(); URL.revokeObjectURL(url);
-  }
-  document.getElementById('exportState').addEventListener('click',(e)=>{e.preventDefault(); exportState();});
-
-  btnReset.addEventListener('click',()=>{if(confirm('Reset session (clear stats and XP)?')) resetSession(true)});
-
-  // Hidden Log Pane functionality can be triggered by future buttons if desired.
-  // For now, these are not visible to the user to simplify the UI.
-  // const toggleParsed=null, toggleRaw=null, toggleDebug=null;
-  // if(toggleParsed) toggleParsed.addEventListener('click',()=>{const off=parsedLog.style.display!=='none'; parsedLog.style.display=off?'none':''; toggleParsed.textContent=off?'Show Parsed':'Hide Parsed'; if(!parsedLog.innerHTML) parsedLog.innerHTML='<div class="small dim">(parsed lines will appear here)</div>';});
-  // if(toggleRaw) toggleRaw.addEventListener('click',()=>{const off=rawPane.style.display!=='none'; rawPane.style.display=off?'none':''; toggleRaw.textContent=off?'Show Raw':'Hide Raw'; if(!off){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n');}});
-  // if(toggleDebug) toggleDebug.addEventListener('click',()=>{const off=debugPane.style.display!=='none'; debugPane.style.display=off?'none':''; toggleDebug.textContent=off?'Show Debug':'Hide Debug'; if(!off){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent=debugLog.join('\n'); debugPane.innerHTML=''; debugPane.appendChild(pre);}});
-
-  [inclDiscardedChk,normalizeVisibleChk,dimDiscardedOnlyChk,rarityFilterSel,eventSortBySel,eventSortDirSel,eventSearchInp,eventMinEventsInp].forEach(el=>el.addEventListener('input',renderTable));
-
-  [viewAll,viewKept,viewDiscarded,viewDiscardedOnly].forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      [viewAll,viewKept,viewDiscarded,viewDiscardedOnly].forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      eventView = (btn===viewAll)?'all' : (btn===viewKept)?'kept' : (btn===viewDiscarded)?'discarded' : 'discardonly';
-      renderTable();
     });
+    input.click();
+  }
+});
+
+/* =========================
+   Export / Prefs / Sorting
+   ========================= */
+exportCSV.addEventListener('click',e=>{
+  e.preventDefault();
+  const normalize=normalizeVisibleChk.checked;
+  let pctBase=normalize? Object.values(stats).reduce((sum,s)=>sum+s.kept+s.discarded,0) : (totalKept+totalDiscarded);
+  pctBase=pctBase||1;
+
+  const rows=[['High','Low','Name','Events','Kept','Discarded','Percent','Rarity','MinQL','MaxQL','Samples','LastSeen']];
+  for(const k in stats){
+    const s=stats[k];
+    const events=s.kept+s.discarded;
+    const pct=(100.0*events)/pctBase;
+    rows.push([
+      s.high||0, s.low||0, s.name, events, s.kept, s.discarded,
+      pct.toFixed(2)+'%', s.rarity||rarityOf(pct),
+      s.minql===99999?'':s.minql, s.maxql||'',
+      (s.sampleqls||[]).join(' '), s.lastSeen||''
+    ]);
+  }
+  const csv=rows.map(r=>r.map(c=>{
+    const t=String(c??'');
+    return (t.includes('"')||t.includes(',')||t.includes('\n')) ? `"${t.replace(/"/g,'""')}"` : t;
+  }).join(',')).join('\n');
+
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='xanalytics_session.csv'; a.click();
+  URL.revokeObjectURL(url);
+
+  const origText=exportCSV.textContent;
+  exportCSV.textContent='Exported!'; exportCSV.style.color='var(--ok)';
+  setTimeout(()=>{ exportCSV.textContent=origText; exportCSV.style.color=''; },2000);
+});
+
+function exportState(){
+  const prefs={
+    normalizeVisible: normalizeVisibleChk.checked,
+    dimDiscardedOnly: dimDiscardedOnlyChk.checked,
+    rarity: rarityFilterSel.value,
+    sortBy, sortDir,
+    search: eventSearchInp.value,
+    minEvents: toNum(eventMinEventsInp.value),
+    view: eventView,
+    xpInclude: { ...xpInclude },
+    style: styleSel.value
+  };
+  const events=Object.values(stats);
+  const out={ when:new Date().toISOString(), totals:{ totalKept,totalDiscarded,linesRead,parseHits,parseMisses,rotationCount,readErrors }, prefs, events, xp: xpState };
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='xanalytics_state.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+exportStateLink.addEventListener('click',e=>{ e.preventDefault(); exportState(); });
+
+btnReset.addEventListener('click',()=>{ if(confirm('Reset session (clear stats and XP)?')) resetSession(true); });
+
+[normalizeVisibleChk, dimDiscardedOnlyChk, rarityFilterSel, eventMinEventsInp, eventSearchInp].forEach(el=>el.addEventListener('input',renderTable));
+
+[viewAll, viewKept, viewDiscarded, viewDiscardedOnly].forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    [viewAll,viewKept,viewDiscarded,viewDiscardedOnly].forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    eventView = btn===viewAll ? 'all' : btn===viewKept ? 'kept' : btn===viewDiscarded ? 'discarded' : 'discardonly';
+    renderTable();
   });
+});
 
-  ['xp','axp','sk'].forEach(k=>{ xpd.need[k].addEventListener('change',()=>{xpState.goals[k]=toNum(xpd.need[k].value); refreshXPUI();}); });
-  if(fxp && faxp && fsk && frxp) {
-    [fxp,faxp,fsk,frxp].forEach(ch=>ch.addEventListener('change',()=>{xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;}));
+[sortName,sortEvents,sortPercent].forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    [sortName,sortEvents,sortPercent].forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    sortBy = btn===sortName ? 'name' : btn===sortEvents ? 'events' : 'percent';
+    renderTable();
+  });
+});
+
+toggleSortDir.addEventListener('click',()=>{ sortDir = (sortDir==='desc'?'asc':'desc'); toggleSortDir.textContent = (sortDir==='desc'?'↓':'↑'); renderTable(); });
+
+[fxp,faxp,fsk,frxp].forEach(ch=>{
+  ch.addEventListener('change',()=>{
+    xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;
+  });
+});
+
+styleSel.addEventListener('change',()=>{
+  document.body.classList.remove('xp','monokai');
+  if(styleSel.value==='xp'){ document.body.classList.add('xp'); }
+  else if(styleSel.value==='monokai'){ document.body.classList.add('monokai'); }
+});
+
+/* =========================
+   Reset/Init
+   ========================= */
+function resetSession(clearStats){
+  if(state.tailTimer){ clearInterval(state.tailTimer); state.tailTimer=null; }
+  state.fileHandle=null; state.fileObj=null; state.offset=0; state.reading=false; state.paused=false;
+  if(clearStats){
+    for(const k in stats) delete stats[k];
+    totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=rotationCount=readErrors=0;
+    debugLog.length=0; rawLines.length=0; xpReset();
   }
+  renderTable(); updateMetrics(); fileInfo.style.display='none'; setReading(false);
+}
 
-  styleSel.addEventListener('change',()=>{document.body.classList.toggle('minimal', styleSel.value==='minimal')});
-
-  function resetSession(clearStats){
-    if(state.tailTimer){clearInterval(state.tailTimer); state.tailTimer=null;}
-    state.fileHandle=null; state.fileObj=null; state.offset=0; state.reading=false; state.paused=false;
-    if(clearStats){
-      for(const k in stats) delete stats[k];
-      totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=rotationCount=readErrors=0;
-      debugLog.length=0; rawLines.length=0; xpReset();
-    }
-    renderTable(); updateMetrics();
-    fileInfo.style.display='none'; folderInfo.style.display='none';
-    setReading(false);
-  }
-
-  resetSession(true);
-  pushDebug('Xanalytics ready — drop or attach a file');
+resetSession(true);
+refreshXPUI();
 })();
 </script>
 </body>
