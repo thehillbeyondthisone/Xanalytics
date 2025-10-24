@@ -116,24 +116,18 @@ label span { cursor: help; }
             <div class="drop" id="drop" tabindex="0">
               <div>
                 <div style="font-weight:800">Drop log file here</div>
-                <div class="small">or use buttons below</div>
+                <div class="small">Quick and easy backup method</div>
               </div>
             </div>
             <div id="fileInfo" class="small" style="display:none;margin-top:6px"></div>
             <div id="folderInfo" class="small" style="display:none;margin-top:6px;padding:6px;background:var(--xp-bg);border:1px solid var(--ok)"></div>
             <div class="toolbar" style="margin-top:6px">
-              <button class="btn" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Browse Logs Folder</button>
-              <button class="btn" id="btnAttach" title="Select a single log file">Attach File</button>
+              <button class="btn alt" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Find My Logs</button>
+              <button class="btn" id="btnAttach" title="Select a single log file manually">Browse Files</button>
             </div>
             <div class="toolbar" style="margin-top:6px">
-              <button class="btn alt" id="btnStart" title="Start monitoring the file for new entries">Start</button>
-              <button class="btn ghost" id="btnPause" title="Pause monitoring">Pause</button>
-              <button class="btn ghost" id="btnStop" title="Stop monitoring and close file">Stop</button>
-              <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Reload</button>
-            </div>
-            <div class="toolbar" style="margin-top:6px">
+              <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
               <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
-              <button class="btn" id="btnExportState" title="Export complete session state as JSON">Export State</button>
               <button class="btn ghost" id="btnReset" title="Clear all statistics and start fresh">Reset</button>
             </div>
           </div>
@@ -141,23 +135,31 @@ label span { cursor: help; }
           <div class="group">
             <h3>Instructions</h3>
             <ul class="instructions">
-                <li><b>Finding Your Logs:</b> Click 'Browse Logs Folder' and navigate to your Anarchy Online installation. Logs are typically in: <code style="font-size:11px">Anarchy Online/Prefs/&lt;CharacterName&gt;/</code></li>
-                <li><b>Quick Start:</b> Drag-and-drop a log file onto the panel above, or use 'Attach File' to select one directly.</li>
-                <li><b>Start Monitoring:</b> Click 'Start' to begin real-time analysis. Data appears in the tables and charts as new log entries are written.</li>
-                <li><b>Tip:</b> Leave Xanalytics open while playing to see live statistics. Use 'Reload' to skip to the end of a large log file.</li>
+                <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
+                <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
+                <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
             </ul>
           </div>
 
           <div class="group">
             <h3>Settings</h3>
             <div class="row">
-              <label><input id="inclDiscarded" type="checkbox" checked/> <span title="If checked, an event's percentage is based on ALL events (kept + discarded). If unchecked, it's based ONLY on events you kept.">Base % on all events</span></label>
-              <label><input id="normalizeVisible" type="checkbox"/> <span title="Recalculates percentages based only on the rows currently visible after filtering. The '%' column for visible rows will add up to 100%.">Renormalize % to visible</span></label>
+              <label><input id="inclDiscarded" type="checkbox" checked/> Base % on all events</label>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Percentages include both kept and discarded items in the calculation</div>
+
             <div class="row">
-              <label><input id="dimDiscardedOnly" type="checkbox" checked/> <span title="Applies a visual effect to dim rows for items that you have only discarded, never kept, making them less prominent.">Dim discarded-only rows</span></label>
+              <label><input id="normalizeVisible" type="checkbox"/> Renormalize % to visible</label>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Recalculates % so visible rows add up to 100% (useful after filtering)</div>
+
+            <div class="row">
+              <label><input id="dimDiscardedOnly" type="checkbox" checked/> Dim discarded-only rows</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Makes items you've never kept less prominent in the table</div>
+
             <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
+
             <div class="row">
               <label>Rarity</label>
               <select id="rarityFilter" class="input">
@@ -166,7 +168,11 @@ label span { cursor: help; }
                 <option value="rare">Rare+</option>
                 <option value="epic">Epic</option>
               </select>
-              <label>Sort</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter by minimum rarity level (hides common items when set higher)</div>
+
+            <div class="row">
+              <label>Sort by</label>
               <select id="eventSortBy" class="input">
                 <option value="events">Events</option>
                 <option value="percent">Percent</option>
@@ -180,14 +186,20 @@ label span { cursor: help; }
                 <option value="asc">Asc</option>
               </select>
             </div>
-            <div class="small" style="margin-left: 42px;">Shows items of the selected rarity and higher.</div>
-            
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Choose how to sort the metrics table</div>
+
             <div class="row">
               <input id="eventSearch" class="input w" placeholder="Search event or source…"/>
-              <label><span title="Hides any item that has been seen fewer times than this number.">Min events</span></label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter table by item name or source (e.g., mob name)</div>
+
+            <div class="row">
+              <label>Min events</label>
               <input id="eventMinEvents" type="number" class="input" value="0" style="width:70px"/>
             </div>
-             <div class="row">
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Hide items seen fewer than this many times</div>
+
+            <div class="row">
               <span class="segment">
                 <button id="viewAll" class="active" title="Show all items">All</button>
                 <button id="viewKept" title="Show only items that have been kept at least once">Kept</button>
@@ -195,6 +207,7 @@ label span { cursor: help; }
                 <button id="viewDiscardedOnly" title="Show only items that you have discarded but never kept.">Discarded-only</button>
               </span>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:2px">Filter by whether you kept, discarded, or both</div>
           </div>
         </section>
 
@@ -282,12 +295,8 @@ label span { cursor: help; }
 
   const btnBrowseFolder = document.getElementById('btnBrowseFolder');
   const btnAttach = document.getElementById('btnAttach');
-  const btnStart  = document.getElementById('btnStart');
-  const btnPause  = document.getElementById('btnPause');
-  const btnStop   = document.getElementById('btnStop');
   const btnReload = document.getElementById('btnReload');
   const btnExportCSV = document.getElementById('btnExportCSV');
-  const btnExportState = document.getElementById('btnExportState');
   const btnReset  = document.getElementById('btnReset');
   const folderInfo = document.getElementById('folderInfo');
 
@@ -540,73 +549,93 @@ label span { cursor: help; }
     startTailWithFile(f);
   });
 
-  // Browse folder functionality - scan for log files
-  async function scanDirectoryForLogs(dirHandle, maxDepth = 3, currentDepth = 0) {
-    const logFiles = [];
-    if (currentDepth > maxDepth) return logFiles;
+  // Browse folder functionality - scan for character folders and their log files
+  async function scanPrefsFolder(dirHandle) {
+    const characters = [];
 
     try {
+      // Scan for subdirectories (character folders)
       for await (const entry of dirHandle.values()) {
-        if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.txt')) {
-          logFiles.push({ handle: entry, path: entry.name, dirName: dirHandle.name });
-        } else if (entry.kind === 'directory' && currentDepth < maxDepth) {
-          const subFiles = await scanDirectoryForLogs(entry, maxDepth, currentDepth + 1);
-          logFiles.push(...subFiles.map(f => ({...f, path: entry.name + '/' + f.path})));
+        if (entry.kind === 'directory') {
+          // Each folder should be a character name/ID
+          const logFiles = [];
+          try {
+            for await (const file of entry.values()) {
+              if (file.kind === 'file' && file.name.toLowerCase().endsWith('.txt')) {
+                logFiles.push({ handle: file, name: file.name });
+              }
+            }
+          } catch (e) {
+            pushDebug('SCAN_CHAR_ERR: ' + e);
+          }
+
+          if (logFiles.length > 0) {
+            characters.push({
+              name: entry.name,
+              files: logFiles
+            });
+          }
         }
       }
     } catch (e) {
-      pushDebug('SCAN_ERR: ' + e);
+      pushDebug('SCAN_PREFS_ERR: ' + e);
     }
-    return logFiles;
+    return characters;
   }
 
   btnBrowseFolder.addEventListener('click', async () => {
     if (!('showDirectoryPicker' in window)) {
-      alert('Folder browsing requires Chrome/Edge browser. Please use "Attach File" button instead.');
+      alert('Folder browsing requires Chrome/Edge browser. Please use "Browse Files" button instead.');
       return;
     }
 
     try {
-      const dirHandle = await window.showDirectoryPicker();
       folderInfo.style.display = 'block';
-      folderInfo.innerHTML = '<div style="font-weight:bold">Scanning for log files...</div>';
+      folderInfo.innerHTML = '<div style="font-weight:bold;color:var(--muted)">📂 Navigate to your Anarchy Online Prefs folder...<br/><code style="font-size:10px">AppData\\Local\\Funcom\\Anarchy Online\\[UniqueID]\\Anarchy Online\\Prefs</code></div>';
 
-      const logFiles = await scanDirectoryForLogs(dirHandle);
+      const dirHandle = await window.showDirectoryPicker();
+      folderInfo.innerHTML = '<div style="font-weight:bold">🔍 Scanning for character logs...</div>';
 
-      if (logFiles.length === 0) {
-        folderInfo.innerHTML = '<div style="color:var(--err)">No .txt log files found in this folder. Try selecting your Anarchy Online/Prefs directory.</div>';
+      const characters = await scanPrefsFolder(dirHandle);
+
+      if (characters.length === 0) {
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">⚠️ No character folders with log files found.<br/><br/>Make sure you selected the "Prefs" folder that contains character subfolders.<br/><br/><span style="font-size:11px">Expected path:<br/><code>...\\Anarchy Online\\Prefs\\</code></span></div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 8000);
         return;
       }
 
-      // Group files by character folder
-      const byChar = {};
-      logFiles.forEach(f => {
-        const parts = f.path.split('/');
-        const charName = parts.length > 1 ? parts[0] : 'Root';
-        if (!byChar[charName]) byChar[charName] = [];
-        byChar[charName].push(f);
+      // Display character list
+      let html = '<div style="font-weight:bold;margin-bottom:8px;font-size:13px">✨ Found ' + characters.length + ' character' + (characters.length > 1 ? 's' : '') + ' with logs:</div>';
+      html += '<div style="max-height:200px;overflow:auto;background:var(--face);padding:6px;border:1px solid var(--hi);border-radius:6px">';
+
+      characters.sort((a, b) => a.name.localeCompare(b.name));
+
+      characters.forEach((char, charIdx) => {
+        html += '<div style="margin:8px 0;padding:8px;background:var(--panel);border:1px solid var(--hi);border-radius:4px">';
+        html += '<div style="font-weight:bold;font-size:12px;margin-bottom:4px">👤 ' + esc(char.name) + '</div>';
+
+        char.files.forEach((file, fileIdx) => {
+          const dataIdx = charIdx + '_' + fileIdx;
+          html += '<div style="margin:4px 0 4px 16px">';
+          html += '<button class="btn" style="font-size:11px;padding:3px 10px;margin-right:6px" data-char-idx="' + charIdx + '" data-file-idx="' + fileIdx + '">Open</button>';
+          html += '<span style="font-size:11px;color:var(--muted)">📄 ' + esc(file.name) + '</span>';
+          html += '</div>';
+        });
+
+        html += '</div>';
       });
 
-      let html = '<div style="font-weight:bold;margin-bottom:4px">Found ' + logFiles.length + ' log file(s) in ' + Object.keys(byChar).length + ' folder(s):</div>';
-      html += '<div style="max-height:150px;overflow:auto;background:var(--face);padding:4px;border:1px solid var(--hi)">';
-
-      for (const [charName, files] of Object.entries(byChar).sort()) {
-        html += '<div style="margin:4px 0"><b>' + esc(charName) + '</b> (' + files.length + ' file' + (files.length > 1 ? 's' : '') + '):</div>';
-        files.forEach((f, idx) => {
-          const fileName = f.path.split('/').pop();
-          html += '<div style="margin-left:12px"><button class="btn" style="font-size:11px;padding:2px 6px;margin:2px" data-file-idx="' + logFiles.indexOf(f) + '">Open</button> <span style="font-size:11px">' + esc(fileName) + '</span></div>';
-        });
-      }
       html += '</div>';
-      html += '<div style="margin-top:6px;font-size:11px;color:var(--muted)">Click "Open" next to a log file to start monitoring it.</div>';
+      html += '<div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Click "Open" to start monitoring (auto-starts on load)</div>';
 
       folderInfo.innerHTML = html;
 
       // Add click handlers to all Open buttons
-      folderInfo.querySelectorAll('button').forEach(btn => {
+      folderInfo.querySelectorAll('button[data-char-idx]').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const idx = parseInt(btn.getAttribute('data-file-idx'));
-          const selectedFile = logFiles[idx];
+          const charIdx = parseInt(btn.getAttribute('data-char-idx'));
+          const fileIdx = parseInt(btn.getAttribute('data-file-idx'));
+          const selectedFile = characters[charIdx].files[fileIdx];
           resetSession(true);
           await startTailWithHandle(selectedFile.handle);
           folderInfo.style.display = 'none';
@@ -623,7 +652,10 @@ label span { cursor: help; }
     } catch (e) {
       if (e.name !== 'AbortError') {
         pushDebug('FOLDER_PICK_ERR: ' + e);
-        alert('Error browsing folder: ' + e.message);
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">❌ Error: ' + esc(e.message) + '</div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 5000);
+      } else {
+        folderInfo.style.display = 'none';
       }
     }
   });
@@ -636,9 +668,6 @@ label span { cursor: help; }
       input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f); folderInfo.style.display='none';}}); input.click();
     }
   });
-  btnStart.addEventListener('click',()=>{state.paused=false; setReading(true)});
-  btnPause.addEventListener('click',()=>{state.paused=true; setReading(false)});
-  btnStop.addEventListener('click',stopTail);
   btnReload.addEventListener('click',async ()=>{
     try{
       if(state.fileHandle){
@@ -677,7 +706,7 @@ label span { cursor: help; }
     }, 2000);
   });
 
-  function exportState(fromButton = false){
+  function exportState(){
     const prefs={
       inclDiscarded:inclDiscardedChk.checked, normalizeVisible:normalizeVisibleChk.checked, dimDiscardedOnly:dimDiscardedOnlyChk.checked,
       rarity:rarityFilterSel.value, sortBy:eventSortBySel.value, sortDir:eventSortDirSel.value,
@@ -688,21 +717,7 @@ label span { cursor: help; }
     const out={ when:new Date().toISOString(), totals:{totalKept,totalDiscarded,linesRead,parseHits,parseMisses,rotationCount,readErrors}, prefs, events, xp:xpState };
     const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
     const a=document.createElement('a'); a.href=url; a.download='xanalytics_state.json'; a.click(); URL.revokeObjectURL(url);
-
-    // Show confirmation if from button
-    if (fromButton && btnExportState) {
-      const origText = btnExportState.textContent;
-      btnExportState.textContent = 'Exported!';
-      btnExportState.style.background = 'var(--ok)';
-      btnExportState.style.color = '#fff';
-      setTimeout(() => {
-        btnExportState.textContent = origText;
-        btnExportState.style.background = '';
-        btnExportState.style.color = '';
-      }, 2000);
-    }
   }
-  btnExportState.addEventListener('click',() => exportState(true));
   document.getElementById('exportState').addEventListener('click',(e)=>{e.preventDefault(); exportState();});
 
   btnReset.addEventListener('click',()=>{if(confirm('Reset session (clear stats and XP)?')) resetSession(true)});
