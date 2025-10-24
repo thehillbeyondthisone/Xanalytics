@@ -1,6 +1,6 @@
 # Xanalytics 📊
 
-A self-contained, browser-based tool for real-time log file analysis. It uses modern browser APIs to "tail" local files, parsing new lines as they are written and updating a metrics dashboard in real-time. The entire application is a single HTML file with no dependencies, no build step, and no server-side components. All processing is done client-side.
+A self-contained, browser-based tool for real-time log file analysis. It uses Chrome / Edge browser APIs to "tail" local files, parsing new lines as they are written and updating a metrics dashboard in real-time. The entire application is a single HTML file with no dependencies, no build step, and no server-side components.
 
 ---
 
@@ -14,9 +14,15 @@ A self-contained, browser-based tool for real-time log file analysis. It uses mo
 
 ---
 
-* **Rarity Filter**: Use this to hide common clutter. If you only want to see valuable or interesting items, set this to "Uncommon+" or "Rare+" to hide all the junk.
+#### INSTRUCTIONS
 
-* **Min Events**: This is great for cleaning up the view. If you only want to see items that have dropped at least 5 times, set this to "5" to hide anything that has appeared less frequently.
+* **Step 1: Create Log**: Open the "Friends" window, then right click your listed chat windows and create a new one (name it anything you like). Right click it and turn on logging; choosing "Show Log Window" will show the exact directory of the new log. This is the Log.txt you'll drop into Xanalytics in step 3.
+
+* **Step 2: Subscribe to appropriate channels**: Open and right click your new chat window, and subscribe to the following channels:
+*    -Vicinity Loot Messages
+*    -Me got XP
+*    -Me got SK
+* (OPTIONAL) If you plan to use Oracle, or another 
 
 * **View Buttons (All, Kept, Discarded, Discarded-only)**: These are powerful one-click filters.
     * Click **"Kept"** to see everything you've actually picked up.
