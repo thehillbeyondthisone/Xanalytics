@@ -116,41 +116,50 @@ label span { cursor: help; }
             <div class="drop" id="drop" tabindex="0">
               <div>
                 <div style="font-weight:800">Drop log file here</div>
-                <div class="small">or click <kbd>Attach</kbd> (Chrome/Edge best)</div>
+                <div class="small">Quick and easy backup method</div>
               </div>
             </div>
             <div id="fileInfo" class="small" style="display:none;margin-top:6px"></div>
+            <div id="folderInfo" class="small" style="display:none;margin-top:6px;padding:6px;background:var(--xp-bg);border:1px solid var(--ok)"></div>
             <div class="toolbar" style="margin-top:6px">
-              <button class="btn" id="btnAttach">Attach</button>
-              <button class="btn alt" id="btnStart">Start</button>
-              <button class="btn ghost" id="btnPause">Pause</button>
-              <button class="btn ghost" id="btnStop">Stop</button>
-              <button class="btn" id="btnReload">Reload</button>
-              <button class="btn" id="btnExportCSV">Export CSV</button>
-              <button class="btn" id="btnExportState">Export State</button>
-              <button class="btn ghost" id="btnReset">Reset</button>
+              <button class="btn alt" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Find My Logs</button>
+              <button class="btn" id="btnAttach" title="Select a single log file manually">Browse Files</button>
+            </div>
+            <div class="toolbar" style="margin-top:6px">
+              <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
+              <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
+              <button class="btn ghost" id="btnReset" title="Clear all statistics and start fresh">Reset</button>
             </div>
           </div>
           
           <div class="group">
             <h3>Instructions</h3>
             <ul class="instructions">
-                <li><b>Attach:</b> Drag-and-drop a log file onto the panel above, or click the Attach button.</li>
-                <li><b>Start:</b> Click the 'Start' button to begin monitoring the file for new lines.</li>
-                <li><b>Analyze:</b> Data will appear in the tables and charts on the right in real-time.</li>
+                <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
+                <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
+                <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
             </ul>
           </div>
 
           <div class="group">
             <h3>Settings</h3>
             <div class="row">
-              <label><input id="inclDiscarded" type="checkbox" checked/> <span title="If checked, an event's percentage is based on ALL events (kept + discarded). If unchecked, it's based ONLY on events you kept.">Base % on all events</span></label>
-              <label><input id="normalizeVisible" type="checkbox"/> <span title="Recalculates percentages based only on the rows currently visible after filtering. The '%' column for visible rows will add up to 100%.">Renormalize % to visible</span></label>
+              <label><input id="inclDiscarded" type="checkbox" checked/> Base % on all events</label>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Percentages include both kept and discarded items in the calculation</div>
+
             <div class="row">
-              <label><input id="dimDiscardedOnly" type="checkbox" checked/> <span title="Applies a visual effect to dim rows for items that you have only discarded, never kept, making them less prominent.">Dim discarded-only rows</span></label>
+              <label><input id="normalizeVisible" type="checkbox"/> Renormalize % to visible</label>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Recalculates % so visible rows add up to 100% (useful after filtering)</div>
+
+            <div class="row">
+              <label><input id="dimDiscardedOnly" type="checkbox" checked/> Dim discarded-only rows</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Makes items you've never kept less prominent in the table</div>
+
             <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
+
             <div class="row">
               <label>Rarity</label>
               <select id="rarityFilter" class="input">
@@ -159,7 +168,11 @@ label span { cursor: help; }
                 <option value="rare">Rare+</option>
                 <option value="epic">Epic</option>
               </select>
-              <label>Sort</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter by minimum rarity level (hides common items when set higher)</div>
+
+            <div class="row">
+              <label>Sort by</label>
               <select id="eventSortBy" class="input">
                 <option value="events">Events</option>
                 <option value="percent">Percent</option>
@@ -173,14 +186,20 @@ label span { cursor: help; }
                 <option value="asc">Asc</option>
               </select>
             </div>
-            <div class="small" style="margin-left: 42px;">Shows items of the selected rarity and higher.</div>
-            
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Choose how to sort the metrics table</div>
+
             <div class="row">
               <input id="eventSearch" class="input w" placeholder="Search event or source…"/>
-              <label><span title="Hides any item that has been seen fewer times than this number.">Min events</span></label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter table by item name or source (e.g., mob name)</div>
+
+            <div class="row">
+              <label>Min events</label>
               <input id="eventMinEvents" type="number" class="input" value="0" style="width:70px"/>
             </div>
-             <div class="row">
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Hide items seen fewer than this many times</div>
+
+            <div class="row">
               <span class="segment">
                 <button id="viewAll" class="active" title="Show all items">All</button>
                 <button id="viewKept" title="Show only items that have been kept at least once">Kept</button>
@@ -188,6 +207,7 @@ label span { cursor: help; }
                 <button id="viewDiscardedOnly" title="Show only items that you have discarded but never kept.">Discarded-only</button>
               </span>
             </div>
+            <div class="small" style="margin-left:20px;margin-top:2px">Filter by whether you kept, discarded, or both</div>
           </div>
         </section>
 
@@ -273,19 +293,14 @@ label span { cursor: help; }
 
   const styleSel=document.getElementById('styleSel');
 
+  const btnBrowseFolder = document.getElementById('btnBrowseFolder');
   const btnAttach = document.getElementById('btnAttach');
-  const btnStart  = document.getElementById('btnStart');
-  const btnPause  = document.getElementById('btnPause');
-  const btnStop   = document.getElementById('btnStop');
   const btnReload = document.getElementById('btnReload');
   const btnExportCSV = document.getElementById('btnExportCSV');
-  const btnExportState = document.getElementById('btnExportState');
   const btnReset  = document.getElementById('btnReset');
+  const folderInfo = document.getElementById('folderInfo');
 
   const fileInfo = document.getElementById('fileInfo');
-  const cutoffLabel = document.getElementById('cutoffLabel');
-  const modeLabel = document.getElementById('modeLabel');
-  const pathLabel = document.getElementById('pathLabel');
 
   const parsedLog = document.getElementById('parsedLog');
   const rawPane = document.getElementById('rawPane');
@@ -346,12 +361,13 @@ label span { cursor: help; }
   function rarityOf(p){if(p>=5)return'Common';if(p>=1)return'Uncommon';if(p>=0.2)return'Rare';return'Epic'}
 
   function pushDebug(s){
-    const t=`[${new Date().toISOString()}] ${s}`; debugLog.push(t); if(debugPane.style.display!=='none'){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent+=(pre.textContent?'\n':'')+t; debugPane.innerHTML=''; debugPane.appendChild(pre); debugPane.scrollTop=debugPane.scrollHeight;}
+    const t=`[${new Date().toISOString()}] ${s}`; debugLog.push(t); if(debugPane && debugPane.style.display!=='none'){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent+=(pre.textContent?'\n':'')+t; debugPane.innerHTML=''; debugPane.appendChild(pre); debugPane.scrollTop=debugPane.scrollHeight;}
   }
   function pushRaw(ln){
-    rawLines.push(ln); if(rawPane.style.display!=='none'){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n'); rawPane.scrollTop=rawPane.scrollHeight;}
+    rawLines.push(ln); if(rawPane && rawPane.style.display!=='none'){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n'); rawPane.scrollTop=rawPane.scrollHeight;}
   }
   function pushParsed(tag,text){
+    if(!parsedLog) return;
     const line=document.createElement('div'); line.className='line';
     const pill=document.createElement('span'); pill.className='pill '+tag; pill.textContent=tag.toUpperCase();
     const span=document.createElement('span'); span.textContent=' '+text;
@@ -486,8 +502,7 @@ label span { cursor: help; }
     state.fileHandle=handle; state.fileObj=null;
     try{
       const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
-      cutoffLabel.textContent=new Date(state.startTs).toLocaleString();
-      modeLabel.textContent='Live tail (FSA)'; fileInfo.style.display='block'; fileInfo.textContent=`${f.name} — starting at EOF (${f.size} bytes)`; pathLabel.textContent=f.name;
+      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${f.name} — Live tail (FSA) — Starting at EOF (${fmt(f.size)} bytes)`;
       xpReset(); setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=800;
@@ -505,8 +520,7 @@ label span { cursor: help; }
     state.fileObj=file; state.fileHandle=null;
     try{
       const size=file.size; state.offset=size; state.startTs=now();
-      cutoffLabel.textContent=new Date(state.startTs).toLocaleString();
-      modeLabel.textContent='Polling fallback'; fileInfo.style.display='block'; fileInfo.textContent=`${file.name} — starting at EOF (${size} bytes)`; pathLabel.textContent=file.name;
+      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${file.name} — Polling fallback — Starting at EOF (${fmt(size)} bytes)`;
       xpReset(); setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=1200;
@@ -522,7 +536,7 @@ label span { cursor: help; }
   }
 
   function setReading(on){ state.reading=on&&!state.paused; document.getElementById('statusText').textContent=state.reading?'Parsing':(state.paused?'Paused':'Idle'); const dot=document.getElementById('dot'); dot.classList.toggle('ok',state.reading); dot.classList.toggle('err',!state.reading); updateMetrics(); }
-  function stopTail(){ if(state.tailTimer) clearInterval(state.tailTimer); state.tailTimer=null; state.reading=false; state.paused=false; modeLabel.textContent='Stopped'; setReading(false); }
+  function stopTail(){ if(state.tailTimer) clearInterval(state.tailTimer); state.tailTimer=null; state.reading=false; state.paused=false; setReading(false); }
 
   const dropEl=document.getElementById('drop');
   dropEl.addEventListener('click',()=>btnAttach.click());
@@ -535,21 +549,137 @@ label span { cursor: help; }
     startTailWithFile(f);
   });
 
-  btnAttach.addEventListener('click',async ()=>{
-    if('showOpenFilePicker' in window){
-      try{const [h]=await window.showOpenFilePicker({multiple:false}); resetSession(true); await startTailWithHandle(h);}catch(e){pushDebug('PICK_CANCEL/ERR: '+e)}
-    }else{
-      const input=document.createElement('input'); input.type='file';
-      input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f)}}); input.click();
+  // Browse folder functionality - scan for character folders and their log files
+  async function scanPrefsFolder(dirHandle) {
+    const characters = [];
+
+    try {
+      // Scan for subdirectories (character folders)
+      for await (const entry of dirHandle.values()) {
+        if (entry.kind === 'directory') {
+          // Each folder should be a character name/ID
+          const logFiles = [];
+          try {
+            for await (const file of entry.values()) {
+              if (file.kind === 'file' && file.name.toLowerCase().endsWith('.txt')) {
+                logFiles.push({ handle: file, name: file.name });
+              }
+            }
+          } catch (e) {
+            pushDebug('SCAN_CHAR_ERR: ' + e);
+          }
+
+          if (logFiles.length > 0) {
+            characters.push({
+              name: entry.name,
+              files: logFiles
+            });
+          }
+        }
+      }
+    } catch (e) {
+      pushDebug('SCAN_PREFS_ERR: ' + e);
+    }
+    return characters;
+  }
+
+  btnBrowseFolder.addEventListener('click', async () => {
+    if (!('showDirectoryPicker' in window)) {
+      alert('Folder browsing requires Chrome/Edge browser. Please use "Browse Files" button instead.');
+      return;
+    }
+
+    try {
+      folderInfo.style.display = 'block';
+      folderInfo.innerHTML = '<div style="font-weight:bold;color:var(--muted)">📂 Navigate to your Anarchy Online Prefs folder...<br/><code style="font-size:10px">AppData\\Local\\Funcom\\Anarchy Online\\[UniqueID]\\Anarchy Online\\Prefs</code></div>';
+
+      const dirHandle = await window.showDirectoryPicker();
+      folderInfo.innerHTML = '<div style="font-weight:bold">🔍 Scanning for character logs...</div>';
+
+      const characters = await scanPrefsFolder(dirHandle);
+
+      if (characters.length === 0) {
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">⚠️ No character folders with log files found.<br/><br/>Make sure you selected the "Prefs" folder that contains character subfolders.<br/><br/><span style="font-size:11px">Expected path:<br/><code>...\\Anarchy Online\\Prefs\\</code></span></div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 8000);
+        return;
+      }
+
+      // Display character list
+      let html = '<div style="font-weight:bold;margin-bottom:8px;font-size:13px">✨ Found ' + characters.length + ' character' + (characters.length > 1 ? 's' : '') + ' with logs:</div>';
+      html += '<div style="max-height:200px;overflow:auto;background:var(--face);padding:6px;border:1px solid var(--hi);border-radius:6px">';
+
+      characters.sort((a, b) => a.name.localeCompare(b.name));
+
+      characters.forEach((char, charIdx) => {
+        html += '<div style="margin:8px 0;padding:8px;background:var(--panel);border:1px solid var(--hi);border-radius:4px">';
+        html += '<div style="font-weight:bold;font-size:12px;margin-bottom:4px">👤 ' + esc(char.name) + '</div>';
+
+        char.files.forEach((file, fileIdx) => {
+          const dataIdx = charIdx + '_' + fileIdx;
+          html += '<div style="margin:4px 0 4px 16px">';
+          html += '<button class="btn" style="font-size:11px;padding:3px 10px;margin-right:6px" data-char-idx="' + charIdx + '" data-file-idx="' + fileIdx + '">Open</button>';
+          html += '<span style="font-size:11px;color:var(--muted)">📄 ' + esc(file.name) + '</span>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+      html += '<div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Click "Open" to start monitoring (auto-starts on load)</div>';
+
+      folderInfo.innerHTML = html;
+
+      // Add click handlers to all Open buttons
+      folderInfo.querySelectorAll('button[data-char-idx]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const charIdx = parseInt(btn.getAttribute('data-char-idx'));
+          const fileIdx = parseInt(btn.getAttribute('data-file-idx'));
+          const selectedFile = characters[charIdx].files[fileIdx];
+          resetSession(true);
+          await startTailWithHandle(selectedFile.handle);
+          folderInfo.style.display = 'none';
+        });
+      });
+
+      // Save last directory to localStorage
+      try {
+        localStorage.setItem('xanalytics_last_folder', dirHandle.name);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        pushDebug('FOLDER_PICK_ERR: ' + e);
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">❌ Error: ' + esc(e.message) + '</div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 5000);
+      } else {
+        folderInfo.style.display = 'none';
+      }
     }
   });
-  btnStart.addEventListener('click',()=>{state.paused=false; setReading(true)});
-  btnPause.addEventListener('click',()=>{state.paused=true; setReading(false)});
-  btnStop.addEventListener('click',stopTail);
+
+  btnAttach.addEventListener('click',async ()=>{
+    if('showOpenFilePicker' in window){
+      try{const [h]=await window.showOpenFilePicker({multiple:false}); resetSession(true); await startTailWithHandle(h); folderInfo.style.display='none';}catch(e){pushDebug('PICK_CANCEL/ERR: '+e)}
+    }else{
+      const input=document.createElement('input'); input.type='file';
+      input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f); folderInfo.style.display='none';}}); input.click();
+    }
+  });
   btnReload.addEventListener('click',async ()=>{
     try{
-      if(state.fileHandle){const f=await state.fileHandle.getFile(); state.offset=f.size; modeLabel.textContent='Reloaded (FSA)';}
-      else if(state.fileObj){const buf=await state.fileObj.arrayBuffer(); state.offset=new TextDecoder().decode(buf).length; modeLabel.textContent='Reloaded (File)';}
+      if(state.fileHandle){
+        const f=await state.fileHandle.getFile();
+        state.offset=f.size;
+        fileInfo.textContent=`📁 ${f.name} — Reloaded (FSA) — Now at EOF (${fmt(f.size)} bytes)`;
+      }
+      else if(state.fileObj){
+        const buf=await state.fileObj.arrayBuffer();
+        state.offset=new TextDecoder().decode(buf).length;
+        fileInfo.textContent=`📁 ${state.fileObj.name} — Reloaded (File) — Now at EOF (${fmt(state.offset)} bytes)`;
+      }
     }catch(e){pushDebug('RELOAD_ERR: '+e)}
   });
 
@@ -563,6 +693,17 @@ label span { cursor: help; }
     }
     const csv=rows.map(r=>r.map(c=>{const t=String(c??''); return (t.includes('"')||t.includes(',')||t.includes('\n'))?`"${t.replace(/"/g,'""')}"`:t}).join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='xanalytics_session.csv'; a.click(); URL.revokeObjectURL(url);
+
+    // Show confirmation
+    const origText = btnExportCSV.textContent;
+    btnExportCSV.textContent = 'Exported!';
+    btnExportCSV.style.background = 'var(--ok)';
+    btnExportCSV.style.color = '#fff';
+    setTimeout(() => {
+      btnExportCSV.textContent = origText;
+      btnExportCSV.style.background = '';
+      btnExportCSV.style.color = '';
+    }, 2000);
   });
 
   function exportState(){
@@ -577,7 +718,6 @@ label span { cursor: help; }
     const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
     const a=document.createElement('a'); a.href=url; a.download='xanalytics_state.json'; a.click(); URL.revokeObjectURL(url);
   }
-  btnExportState.addEventListener('click',exportState);
   document.getElementById('exportState').addEventListener('click',(e)=>{e.preventDefault(); exportState();});
 
   btnReset.addEventListener('click',()=>{if(confirm('Reset session (clear stats and XP)?')) resetSession(true)});
@@ -601,7 +741,9 @@ label span { cursor: help; }
   });
 
   ['xp','axp','sk'].forEach(k=>{ xpd.need[k].addEventListener('change',()=>{xpState.goals[k]=toNum(xpd.need[k].value); refreshXPUI();}); });
-  [fxp,faxp,fsk,frxp].forEach(ch=>ch.addEventListener('change',()=>{xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;}));
+  if(fxp && faxp && fsk && frxp) {
+    [fxp,faxp,fsk,frxp].forEach(ch=>ch.addEventListener('change',()=>{xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;}));
+  }
 
   styleSel.addEventListener('change',()=>{document.body.classList.toggle('minimal', styleSel.value==='minimal')});
 
@@ -613,29 +755,10 @@ label span { cursor: help; }
       totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=rotationCount=readErrors=0;
       debugLog.length=0; rawLines.length=0; xpReset();
     }
-    renderTable(); metricsInline.textContent='lines=0 hits=0 misses=0 rot=0 err=0 kept=0 discarded=0';
-    fileInfo.style.display='none'; pathLabel.textContent='—'; cutoffLabel.textContent='—'; modeLabel.textContent='Idle';
+    renderTable(); updateMetrics();
+    fileInfo.style.display='none'; folderInfo.style.display='none';
+    setReading(false);
   }
-
-  async function startFromDrop(file){ resetSession(true); if('getFile' in file) await startTailWithHandle(file); else await startTailWithFile(file); }
-
-  const drop=document.getElementById('drop');
-  drop.addEventListener('drop',async e=>{
-    e.preventDefault(); e.stopPropagation();
-    const f=e.dataTransfer?.files?.[0]; if(!f) return;
-    const item=e.dataTransfer.items && e.dataTransfer.items[0];
-    if(item && item.getAsFileSystemHandle){ try{ const h=await item.getAsFileSystemHandle(); if(h && h.kind==='file') return startFromDrop(h);}catch{} }
-    startFromDrop(f);
-  });
-  ['dragenter','dragover'].forEach(evt=>drop.addEventListener(evt,e=>{e.preventDefault(); drop.classList.add('dragover')}));
-  ['dragleave','dragend'].forEach(evt=>drop.addEventListener(evt,()=>drop.classList.remove('dragover')));
-
-  btnAttach.addEventListener('click',async ()=>{
-    if('showOpenFilePicker' in window){ try{ const [h]=await window.showOpenFilePicker({multiple:false}); await startFromDrop(h);}catch(e){pushDebug('PICK_CANCEL/ERR: '+e)} }
-    else{ const input=document.createElement('input'); input.type='file'; input.addEventListener('change',()=>{const f=input.files?.[0]; if(f) startFromDrop(f)}); input.click(); }
-  });
-
-  function setReading(on){ state.reading=on&&!state.paused; document.getElementById('statusText').textContent=state.reading?'Parsing':(state.paused?'Paused':'Idle'); const dot=document.getElementById('dot'); dot.classList.toggle('ok',state.reading); dot.classList.toggle('err',!state.reading); }
 
   resetSession(true);
   pushDebug('Xanalytics ready — drop or attach a file');
