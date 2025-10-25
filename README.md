@@ -22,12 +22,10 @@ A self-contained, browser-based tool for real-time log file analysis. It uses Ch
 *    -Vicinity Loot Messages
 *    -Me got XP
 *    -Me got SK
-* (OPTIONAL) If you plan to use Oracle, or another 
 
-* **View Buttons (All, Kept, Discarded, Discarded-only)**: These are powerful one-click filters.
+* **View Buttons**
     * Click **"Kept"** to see everything you've actually picked up.
     * Click **"Discarded"** to see a list of everything you've thrown away.
-    * Click **"Discarded-only"** to answer the question, "What am I *always* throwing away and never keeping?"
 
 #### Key Settings Explained
 
@@ -37,7 +35,7 @@ A self-contained, browser-based tool for real-time log file analysis. It uses Ch
 
 ### Tracking Your XP Gain
 
-The **XP Metrics** dashboard is designed to give you a live, at-a-glance view of your progress. It automatically detects different types of experience points from the log and calculates useful metrics to help you understand the efficiency of your gameplay.
+The **XP Metrics** dashboard is designed to give you a live, at-a-glance view of your progress. It automatically detects different types of experience points from the log and calculates useful metrics based on that data.
 
 #### Understanding the Main Display
 
