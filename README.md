@@ -20,30 +20,19 @@ A self-contained, browser-based tool for real-time log file analysis. It uses Ch
 
 * **Step 2: Subscribe to appropriate channels**: Open and right click your new chat window, and subscribe to the following channels:
 *    -Vicinity Loot Messages
+*    -Research
 *    -Me got XP
 *    -Me got SK
 
-* **View Buttons**
-    * Click **"Kept"** to see everything you've actually picked up.
-    * Click **"Discarded"** to see a list of everything you've thrown away.
-
-#### Key Settings Explained
-
-* **Base % on all events**: When checked, the `%` column is calculated from the grand total of everything seen. If unchecked, it's calculated only from the items you've `Kept`. This helps you see an item's drop rate relative to only the things you consider valuable.
-
-  ---
+* Step 3: Locate your log file**
+    * Navigate to the directory shown in "Show Log Window in AO"
+    * Drag your new log file to the dropzone in Xanalytics
+    * That's it.
+    * NOTE: If you just created this window/log, you may need to loot something or gain xp to generate the Log.txt
 
 ### Tracking Your XP Gain
 
 The **XP Metrics** dashboard is designed to give you a live, at-a-glance view of your progress. It automatically detects different types of experience points from the log and calculates useful metrics based on that data.
-
-#### Setting Goals and Tracking ETAs
-
-The three goal cards (for XP, AXP, and SK) turn the tool into a powerful planning utility.
-
-1.  **Enter Your Goal**: In the input box for each card, type the total amount of XP you need to reach your next level or goal.
-2.  **Watch the Progress Bar**: The bar will fill up as you gain XP, showing you a quick visual of how far you have to go. The label next to it gives you the exact numbers (`You Have / You Need`).
-3.  **Check the ETA**: The "ETA" (Estimated Time of Arrival) tells you approximately how much longer it will take to reach your goal. **This estimate is based on your short-term (last 10 minutes) gain rate**, making it a dynamic prediction of when you'll finish if you continue at your current pace.
 
 #### Using the XP Feed and Filters
 
@@ -56,3 +45,7 @@ The three goal cards (for XP, AXP, and SK) turn the tool into a powerful plannin
 Discord: YellowUmbrellaGroup#8576
 
 ---
+
+#### ADDITIONAL NOTES:
+
+* **If you plan to use Hydra (you should), subscribe to all chat channels except pets. You will be able to use the same log file without creating a new window; the lines will be parsed and sorted correctly, and can be run concurrently.**
