@@ -51,14 +51,9 @@ The three goal cards (for XP, AXP, and SK) turn the tool into a powerful plannin
 * **XP Filters**: On the left-side panel, you can check or uncheck the different XP types. Unchecking a type will exclude it from all calculations on the dashboard—the totals, rates, ETAs, and the live feed will ignore it. This lets you focus only on the specific types of progress you care about at the moment.
 
 ---
-### How It Works
+### Contact
 
-The tool primarily relies on the **File System Access API**, which is the recommended mode for Chromium-based browsers.
-
-When you attach a file, the application gets a special "handle" that allows it to securely interact with the file without having full access to your hard drive. A timer runs every second or so to check the file's properties.
-* If the file's size has grown, the tool knows new lines have been added. It reads only the new part, from where it last left off to the new end of the file.
-
-For browsers that don't support this modern API, the tool uses a fallback method. This involves a standard file input. Because this older method doesn't allow for reading just a small piece of a file, the tool has to quickly re-read the entire file on every check to see what's new. This is less efficient but ensures the tool still works.
+Discord: YellowUmbrellaGroup#8576
 
 * **Renormalize % to visible**: This is a powerful analysis tool. When checked, it recalculates all percentages based *only on the items currently shown in the table*. For example, if you filter the table down to just two rare items, this setting will show you how they compare to each other (e.g., one might be 60% of the filtered view, the other 40%).
 
