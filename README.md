@@ -55,6 +55,4 @@ The three goal cards (for XP, AXP, and SK) turn the tool into a powerful plannin
 
 Discord: YellowUmbrellaGroup#8576
 
-* **Renormalize % to visible**: This is a powerful analysis tool. When checked, it recalculates all percentages based *only on the items currently shown in the table*. For example, if you filter the table down to just two rare items, this setting will show you how they compare to each other (e.g., one might be 60% of the filtered view, the other 40%).
-
 ---
