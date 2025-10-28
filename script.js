@@ -32,6 +32,7 @@
   const inclDiscardedChk = gid('inclDiscarded');
   const normalizeVisibleChk = gid('normalizeVisible');
   const dimDiscardedOnlyChk = gid('dimDiscardedOnly');
+  const combineQLChk = gid('combineQL');
 
   const eventSortBySel = gid('eventSortBy');
   const eventSortDirSel = gid('eventSortDir');
@@ -74,21 +75,31 @@
   const xpInclude={xp:true,axp:true,sk:true,rxp:true};
   const xpState={start:null,totals:{xp:0,axp:0,sk:0,rxp:0},last:{xp:0,axp:0,sk:0,rxp:0},events:0,samples:{xp:[],axp:[],sk:[],rxp:[]},sess:{xp:0,axp:0,sk:0,rxp:0},goals:{xp:0,axp:0,sk:0}};
 
-  // XP / loot regexes
+  // Regexes for XP / loot
 
-  // Matches:
-  // ["#0000000040000001#","System","",1761534321]50 xp was gained as a side bonus!
-  // Captures 50 as XP.
+  // Bonus XP lines like:
+  // ["#..."]181 xp was gained as a side bonus!
   const rxXPBonus=/^\s*(?:\[[^\]]*\])?\s*([0-9][0-9,]*)\s+xp\s+was\s+gained\s+as\s+a\s+side\s+bonus/i;
 
-  // Standard "You gained 12345 XP" style lines (not Alien XP)
+  // Normal XP:
+  // You gained 12345 XP / You received 12345 experience
   const rxXP=/You\s+(?:gained|received)\s+([\d,]+)\s+(?:XP|experience)\b(?!.*Alien)/i;
 
-  // Alien XP, SK, research
-  const rxAXP=/Alien\s+Experience\s+Points.*?([\d,]+)/i;
-  const rxSK=/(?:You\s+gained\s+)?([\d,]+)\s+(?:Shadowknowledge|SK)\b/i;
+  // Alien XP:
+  // You gained 150 Alien Experience Points.
+  // Capture the number before "Alien Experience Points".
+  const rxAXP=/You\s+gained\s+([\d,]+)\s+Alien\s+Experience\s+Points/i;
+
+  // Shadowknowledge (SK):
+  // You gained 1279 points of Shadowknowledge.
+  // Also allow "You gained 50 SK"
+  const rxSK=/(?:You\s+gained\s+)?([\d,]+)\s+(?:points\s+of\s+)?(?:Shadowknowledge|SK)\b/i;
+
+  // Research XP:
+  // 1234 of your XP were allocated to your personal research
   const rxRXP=/([\d,]+)\s+of\s+your\s+XP\s+were\s+allocated\s+to\s+your\s+personal\s+research/i;
 
+  // Loot parsing
   const rxItemref=/<a\s+href\s*=\s*"itemref:\/\/(\d+)(?:\/(\d+))?(?:\/(\d+))?">(.*?)<\/a>/ig;
   const rxAction=/(?:^|\W)(deleted|looted|picked up|picked|received|acquired|added to your inventory|added)(?:\W|$)/i;
   const rxLoose=/\b(deleted|looted|picked up|picked|received|acquired|added)\b/i;
@@ -104,12 +115,9 @@
   function pushDebug(s){
     const t=`[${new Date().toISOString()}] ${s}`;
     debugLog.push(t);
-
-    // Cap debugLog to avoid unbounded memory growth
     if (debugLog.length > 2000) {
       debugLog.splice(0, debugLog.length - 2000);
     }
-
     if(debugPane.style.display!=='none'){
       const pre=debugPane.querySelector('pre')||document.createElement('pre');
       pre.textContent=debugLog.join('\n');
@@ -121,12 +129,9 @@
 
   function pushRaw(ln){
     rawLines.push(ln);
-
-    // Cap rawLines to avoid unbounded memory growth
     if (rawLines.length > 2000) {
       rawLines.splice(0, rawLines.length - 2000);
     }
-
     if(rawPane.style.display!=='none'){
       const pre=rawPane.querySelector('pre');
       pre.textContent=rawLines.slice(-200).join('\n');
@@ -155,7 +160,6 @@
     xpState.samples[key].push({t,v:val});
     xpState.sess[key]+=val;
 
-    // Trim samples to last 10 minutes for rate calc
     const cut=t-10*60*1000;
     ['xp','axp','sk','rxp'].forEach(k=>{
       const a=xpState.samples[k];
@@ -297,13 +301,62 @@
     s.lastSeen=new Date().toISOString();
   }
 
+  // Build table rows (optionally merged by item name if "Combine all QLs" is checked)
+  function buildStatArray() {
+    const arr = Object.values(stats);
+
+    if (!combineQLChk.checked) {
+      return arr.slice();
+    }
+
+    const merged = {};
+    for (const s of arr) {
+      const nm = s.name || '(unknown)';
+      let M = merged[nm];
+      if (!M) {
+        M = merged[nm] = {
+          key: nm,
+          name: nm,
+          events: 0,
+          kept: 0,
+          discarded: 0,
+          minql: 99999,
+          maxql: 0,
+          sampleqls: [],
+          lastSource: null,
+          lastSeen: null
+        };
+      }
+
+      M.kept      += s.kept||0;
+      M.discarded += s.discarded||0;
+      M.events     = M.kept + M.discarded;
+
+      if (s.minql && s.minql < M.minql) M.minql = s.minql;
+      if (s.maxql && s.maxql > M.maxql) M.maxql = s.maxql;
+      for (const q of (s.sampleqls||[])) {
+        if (M.sampleqls.length < 6 && !M.sampleqls.includes(q)) {
+          M.sampleqls.push(q);
+        }
+      }
+
+      if (!M.lastSeen || (s.lastSeen && Date.parse(s.lastSeen) > Date.parse(M.lastSeen||0))) {
+        M.lastSeen = s.lastSeen;
+        M.lastSource = s.lastSource;
+      }
+    }
+
+    return Object.values(merged);
+  }
+
   function renderTable(){
     const includeDiscardedInPct=inclDiscardedChk.checked;
     let pctBase=(includeDiscardedInPct?(totalKept+totalDiscarded):totalKept)||1;
 
     const q=(eventSearchInp.value||'').toLowerCase().trim();
 
-    let arr=Object.values(stats);
+    let arr=buildStatArray();
+
     arr.forEach(s=>{
       s.events=s.kept+s.discarded;
       s.percent=100*s.events/pctBase;
@@ -381,9 +434,11 @@
         const pct=(100*s.events/visibleBase);
         sumPct+=pct;
 
-        const ql = s.minql===99999
-          ? (s.sampleqls?.[0]??'-')
-          : (s.minql===s.maxql?String(s.minql):`${s.minql}-${s.maxql}`);
+        const ql = (s.minql===99999 && !s.maxql)
+          ? (s.sampleqls && s.sampleqls.length ? s.sampleqls[0] : '-')
+          : (s.minql===s.maxql || s.maxql===0
+              ? (s.minql===99999?'-':String(s.minql))
+              : `${s.minql===99999?'-':s.minql}-${s.maxql}`);
 
         const row=
           pad((s.name||'').slice(0,H.name),H.name)+
@@ -416,7 +471,7 @@
 
     let m=null;
 
-    // Bonus XP lines first (side bonus XP should count as normal XP)
+    // Bonus XP (counts as normal XP)
     if((m=line.match(rxXPBonus))){
       const v=toNum(m[1]);
       if(v){
@@ -424,24 +479,28 @@
         xpPush('xp',v);
       }
     }
+    // Alien XP
     else if((m=line.match(rxAXP))){
       const v=toNum(m[1]);if(v){
         if(xpInclude.axp)pushParsed('axp','+'+fmt(v)+' AXP');
         xpPush('axp',v);
       }
     }
+    // Shadowknowledge / SK
     else if((m=line.match(rxSK))){
       const v=toNum(m[1]);if(v){
         if(xpInclude.sk)pushParsed('sk','+'+fmt(v)+' SK');
         xpPush('sk',v);
       }
     }
+    // Research XP
     else if((m=line.match(rxRXP))){
       const v=toNum(m[1]);if(v){
         if(xpInclude.rxp)pushParsed('rxp','+'+fmt(v)+' Research');
         xpPush('rxp',v);
       }
     }
+    // Normal XP
     else if((m=line.match(rxXP))){
       const v=toNum(m[1]);if(v){
         if(xpInclude.xp)pushParsed('xp','+'+fmt(v)+' XP');
@@ -449,7 +508,7 @@
       }
     }
 
-    // Loot / item discovery lines
+    // Loot parsing
     const body=line.replace(/^\s*\[[^\]]*\]\s*/, '').trim();
 
     let matches=[],mm;
@@ -652,7 +711,8 @@
       search:eventSearchInp.value,
       view:eventView,
       xpInclude:{...xpInclude},
-      style:styleSel.value
+      style:styleSel.value,
+      combineQL:combineQLChk.checked
     };
     const events=Object.values(stats);
     const out={
@@ -879,7 +939,7 @@
     }
   });
 
-  [inclDiscardedChk,normalizeVisibleChk,dimDiscardedOnlyChk,
+  [inclDiscardedChk,normalizeVisibleChk,dimDiscardedOnlyChk,combineQLChk,
    eventSortBySel,eventSortDirSel,
    eventSearchInp].forEach(el=>{
     el.addEventListener('input',renderTable);
