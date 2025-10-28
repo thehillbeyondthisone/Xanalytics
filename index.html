@@ -68,7 +68,7 @@
 
                 <div class="infoTabContent" id="tab-notes" style="display:none;">
                   <div class="small">
-                    <p><b>Filters:</b> You can include/exclude discarded lines from % math, normalize % to only what’s visible, dim items that were never kept, sort, and search by name or source. That affects both the table and the “Visible % sum”.</p>
+                    <p><b>Filters:</b> You can include/exclude discarded lines from % math, normalize % to only what’s visible, dim items that were never kept, combine all QLs of an item into one row, sort, and search by name or source. That affects both the table and the “Visible % sum”.</p>
                     <p><b>XP Goals:</b> Put in how much XP / AXP / SK you still need. The bars and ETA update live using a 10-minute rolling rate sample.</p>
                     <p><b>Rotation-aware:</b> If the log file rolls or shrinks, the parser treats that as a new file and keeps going. That’s “rot=…” in the status bar.</p>
                     <p><b>Privacy:</b> Everything is local. Export State / Export CSV just download files to your machine.</p>
@@ -86,6 +86,7 @@
               <label class="checkbox-row"><input id="inclDiscarded" type="checkbox" checked/> Include Discarded in %</label>
               <label class="checkbox-row"><input id="normalizeVisible" type="checkbox"/> Normalize % to visible</label>
               <label class="checkbox-row"><input id="dimDiscardedOnly" type="checkbox" checked/> Dim discarded-only rows</label>
+              <label class="checkbox-row"><input id="combineQL" type="checkbox"/> Combine all QLs</label>
             </div>
 
             <hr class="divider">
