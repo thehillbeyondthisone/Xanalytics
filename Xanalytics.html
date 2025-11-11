@@ -93,6 +93,24 @@ body.minimal .segment{border:1px solid var(--hi);border-radius:8px;background:va
 ul.instructions{margin: 4px 0 4px 16px; padding: 0; font-size:12px; color: var(--muted);}
 ul.instructions li { margin-bottom: 4px; }
 label span { cursor: help; }
+
+/* Modals */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:10020;
+}
+.modal{background:var(--panel); border:1px solid var(--hi); border-radius:12px; padding:16px; width:min(620px,90vw); max-height:80vh; overflow:auto}
+.modal h4{margin:0 0 12px 0; font-size:15px; border-bottom:1px solid var(--hi); padding-bottom:8px}
+.modal .modal-body{margin:12px 0}
+.modal .list{border:1px solid var(--hi); border-radius:8px; padding:8px; background:var(--face); max-height:46vh; overflow:auto}
+.saved-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px; border-bottom:1px dashed var(--hi)}
+.saved-item:last-child{border-bottom:0}
+.saved-label{font-weight:600; font-size:13px; color:var(--ink)}
+.saved-path{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:11px; word-break:break-all; margin-top:2px}
+.saved-actions{display:flex; gap:6px}
+.status-badge{display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600}
+.status-badge.live{background:var(--ok); color:#fff}
+.status-badge.static{background:#666; color:#ddd}
+
 </style>
 </head>
 <body>
@@ -124,8 +142,10 @@ label span { cursor: help; }
             <div class="toolbar" style="margin-top:6px">
               <button class="btn alt" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Find My Logs</button>
               <button class="btn" id="btnAttach" title="Select a single log file manually">Browse Files</button>
+              <button class="btn" id="btnSavedLogs" title="Open saved character logs">💾 Saved Logs</button>
             </div>
             <div class="toolbar" style="margin-top:6px">
+              <button class="btn" id="btnSaveLog" title="Save current log for quick access later" style="display:none">💾 Save This Log</button>
               <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
               <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
               <button class="btn ghost" id="btnReset" title="Clear all statistics and start fresh">Reset</button>
@@ -136,6 +156,7 @@ label span { cursor: help; }
             <h3>Instructions</h3>
             <ul class="instructions">
                 <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
+                <li><b>Save For Later:</b> After loading a log with persistent access <span class="status-badge live" style="font-size:9px">LIVE</span>, click "💾 Save This Log" to save it for quick access. View saved logs anytime via "💾 Saved Logs" button.</li>
                 <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
                 <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
             </ul>
@@ -281,6 +302,29 @@ label span { cursor: help; }
     </div>
   </div>
 
+<!-- Saved Logs Modal -->
+<div class="modal-backdrop" id="savedModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>📁 Saved Character Logs</h4>
+      <button class="btn" id="savedClose">Close</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 10px 0; color:var(--muted); font-size:12px">
+        Quickly load your favorite character logs. Works in Chrome/Edge with persistent file access.
+      </p>
+      <div class="list" id="savedList">
+        <div style="color:var(--muted); text-align:center; padding:20px">No saved logs yet</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--hi)">
+      <button class="btn ghost" id="savedPurge">Delete all saved</button>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:var(--muted)" id="savedStatus"></span>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   const short=(s,n=120)=>{if(s==null)return"";s=String(s);return s.length<=n?s:s.slice(0,n-1)+'…'};
@@ -295,10 +339,20 @@ label span { cursor: help; }
 
   const btnBrowseFolder = document.getElementById('btnBrowseFolder');
   const btnAttach = document.getElementById('btnAttach');
+  const btnSavedLogs = document.getElementById('btnSavedLogs');
+  const btnSaveLog = document.getElementById('btnSaveLog');
   const btnReload = document.getElementById('btnReload');
   const btnExportCSV = document.getElementById('btnExportCSV');
   const btnReset  = document.getElementById('btnReset');
   const folderInfo = document.getElementById('folderInfo');
+
+  const savedModal = document.getElementById('savedModal');
+  const savedClose = document.getElementById('savedClose');
+  const savedList = document.getElementById('savedList');
+  const savedPurge = document.getElementById('savedPurge');
+  const savedStatus = document.getElementById('savedStatus');
+
+  const supportsFS = 'showOpenFilePicker' in window && 'indexedDB' in window;
 
   const fileInfo = document.getElementById('fileInfo');
 
@@ -341,11 +395,73 @@ label span { cursor: help; }
   };
   function gid(id){return document.getElementById(id)}
 
-  const state={fileHandle:null,fileObj:null,offset:0,tailTimer:null,reading:false,paused:false,startTs:0};
+  const state={fileHandle:null,fileObj:null,offset:0,tailTimer:null,reading:false,paused:false,startTs:0,isLive:false,currentLabel:''};
   let linesRead=0,parseHits=0,parseMisses=0,rotationCount=0,readErrors=0,totalKept=0,totalDiscarded=0;
   const stats={}; const debugLog=[]; const rawLines=[]; let eventView='all';
 
   const xpInclude={xp:true,axp:true,sk:true,rxp:true};
+
+  /* ===== IndexedDB for Saved Logs ===== */
+  const DB_NAME='xanalyticsFS', DB_VER=1, STORE='savedLogs';
+  let db=null;
+
+  function idbOpen(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded=()=>{
+        const d=req.result;
+        if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id'});
+      };
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    });
+  }
+  async function getDB(){ if(!db) db=await idbOpen(); return db; }
+
+  async function idbPut(record){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put(record);
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbAll(){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readonly');
+      const st=tx.objectStore(STORE);
+      const out=[];
+      st.openCursor().onsuccess=e=>{
+        const c=e.target.result;
+        if(c){ out.push(c.value); c.continue(); }
+        else{ res(out); }
+      };
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbDel(id){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbClear(){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
   const rxXP=/You\s+(?:gained|received)\s+([\d,]+)\s+(?:XP|experience)\b(?!.*Alien)/i;
   const rxAXP=/Alien\s+Experience\s+Points.*?([\d,]+)/i;
   const rxSK=/(?:You\s+gained\s+)?([\d,]+)\s+(?:Shadowknowledge|SK)\b/i;
@@ -499,10 +615,12 @@ label span { cursor: help; }
   function updateMetrics(){ metricsInline.textContent=`lines=${linesRead} hits=${parseHits} misses=${parseMisses} rot=${rotationCount} err=${readErrors} kept=${totalKept} discarded=${totalDiscarded}`; }
 
   async function startTailWithHandle(handle){
-    state.fileHandle=handle; state.fileObj=null;
+    state.fileHandle=handle; state.fileObj=null; state.isLive=true;
     try{
       const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
-      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${f.name} — Live tail (FSA) — Starting at EOF (${fmt(f.size)} bytes)`;
+      fileInfo.style.display='block';
+      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Starting at EOF (${fmt(f.size)} bytes)`;
+      if(supportsFS) btnSaveLog.style.display='inline-block';
       xpReset(); setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=800;
@@ -517,10 +635,12 @@ label span { cursor: help; }
     }catch(e){readErrors++; pushDebug('OPEN_HANDLE_ERR: '+e); alert('Failed to open file handle: '+e);}
   }
   async function startTailWithFile(file){
-    state.fileObj=file; state.fileHandle=null;
+    state.fileObj=file; state.fileHandle=null; state.isLive=false;
     try{
       const size=file.size; state.offset=size; state.startTs=now();
-      fileInfo.style.display='block'; fileInfo.textContent=`📁 ${file.name} — Polling fallback — Starting at EOF (${fmt(size)} bytes)`;
+      fileInfo.style.display='block';
+      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Starting at EOF (${fmt(size)} bytes)`;
+      btnSaveLog.style.display='none';
       xpReset(); setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=1200;
@@ -668,17 +788,122 @@ label span { cursor: help; }
       input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f); folderInfo.style.display='none';}}); input.click();
     }
   });
+
+  /* ===== Saved Logs Functions ===== */
+  async function saveCurrentLog(){
+    try{
+      if(!supportsFS){
+        alert('Saved Logs requires Chrome/Edge with FileSystem Access API support.');
+        return;
+      }
+      if(!state.fileHandle){
+        alert('Please use "Find My Logs" to select a file with persistent access first.');
+        return;
+      }
+      const label = prompt('Enter a label for this log (e.g., character name):',  state.currentLabel || '');
+      if(!label) return;
+
+      const rec={
+        id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        label:label.trim(),
+        handle:state.fileHandle,
+        savedAt:new Date().toISOString()
+      };
+      await idbPut(rec);
+      state.currentLabel = label.trim();
+      alert(`✓ Saved log "${label}"`);
+    }catch(e){
+      alert('Error saving log: '+e.message);
+      pushDebug('SAVE_ERR: '+e);
+    }
+  }
+
+  async function loadSavedLog(record){
+    try{
+      const perm = await record.handle.requestPermission({mode:'read'});
+      if(perm!=='granted'){
+        alert('Permission denied. Please select the file again.');
+        return;
+      }
+      const file=await record.handle.getFile();
+      resetSession(true);
+      state.currentLabel = record.label;
+      await startTailWithHandle(record.handle);
+      savedModal.style.display='none';
+    }catch(e){
+      alert('Error loading saved log: '+e.message);
+      pushDebug('LOAD_SAVED_ERR: '+e);
+    }
+  }
+
+  async function openSavedModal(){
+    savedModal.style.display='flex';
+    await renderSavedList();
+  }
+
+  async function renderSavedList(){
+    savedList.textContent='';
+    if(!supportsFS){
+      savedList.innerHTML='<div style="color:var(--muted); text-align:center; padding:20px">Saved Logs requires Chrome/Edge with FileSystem Access API.</div>';
+      savedStatus.textContent='Not supported in this browser';
+      return;
+    }
+    try{
+      const rows=await idbAll();
+      if(rows.length===0){
+        savedList.innerHTML='<div style="color:var(--muted); text-align:center; padding:20px">No saved logs yet. Use "Save This Log" button after loading a file.</div>';
+        savedStatus.textContent='0 saved logs';
+        return;
+      }
+
+      savedStatus.textContent=`${rows.length} saved log${rows.length>1?'s':''}`;
+      rows.sort((a,b)=>a.label.localeCompare(b.label));
+
+      rows.forEach(row=>{
+        const el=document.createElement('div'); el.className='saved-item';
+        const left=document.createElement('div');
+        left.innerHTML=`<div class="saved-label">📁 ${esc(row.label)}</div><div class="saved-path">Saved: ${new Date(row.savedAt).toLocaleDateString()}</div>`;
+        const right=document.createElement('div'); right.className='saved-actions';
+        const load=document.createElement('button'); load.className='btn'; load.textContent='Load';
+        load.onclick=async()=>await loadSavedLog(row);
+        const del=document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
+        del.onclick=async()=>{
+          if(confirm(`Delete "${row.label}"?`)){
+            await idbDel(row.id);
+            await renderSavedList();
+          }
+        };
+        right.appendChild(load); right.appendChild(del);
+        el.appendChild(left); el.appendChild(right);
+        savedList.appendChild(el);
+      });
+    }catch(e){
+      savedList.innerHTML='<div style="color:var(--err); padding:20px">Error loading saved logs: '+esc(e.message)+'</div>';
+      pushDebug('RENDER_SAVED_ERR: '+e);
+    }
+  }
+
+  btnSavedLogs.addEventListener('click',()=>openSavedModal());
+  btnSaveLog.addEventListener('click',()=>saveCurrentLog());
+  savedClose.addEventListener('click',()=>{savedModal.style.display='none'});
+  savedPurge.addEventListener('click',async()=>{
+    if(confirm('Delete ALL saved logs? This cannot be undone.')){
+      await idbClear();
+      await renderSavedList();
+    }
+  });
+
   btnReload.addEventListener('click',async ()=>{
     try{
       if(state.fileHandle){
         const f=await state.fileHandle.getFile();
         state.offset=f.size;
-        fileInfo.textContent=`📁 ${f.name} — Reloaded (FSA) — Now at EOF (${fmt(f.size)} bytes)`;
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Reloaded — Now at EOF (${fmt(f.size)} bytes)`;
       }
       else if(state.fileObj){
         const buf=await state.fileObj.arrayBuffer();
         state.offset=new TextDecoder().decode(buf).length;
-        fileInfo.textContent=`📁 ${state.fileObj.name} — Reloaded (File) — Now at EOF (${fmt(state.offset)} bytes)`;
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Reloaded — Now at EOF (${fmt(state.offset)} bytes)`;
       }
     }catch(e){pushDebug('RELOAD_ERR: '+e)}
   });
@@ -749,14 +974,14 @@ label span { cursor: help; }
 
   function resetSession(clearStats){
     if(state.tailTimer){clearInterval(state.tailTimer); state.tailTimer=null;}
-    state.fileHandle=null; state.fileObj=null; state.offset=0; state.reading=false; state.paused=false;
+    state.fileHandle=null; state.fileObj=null; state.offset=0; state.reading=false; state.paused=false; state.isLive=false; state.currentLabel='';
     if(clearStats){
       for(const k in stats) delete stats[k];
       totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=rotationCount=readErrors=0;
       debugLog.length=0; rawLines.length=0; xpReset();
     }
     renderTable(); updateMetrics();
-    fileInfo.style.display='none'; folderInfo.style.display='none';
+    fileInfo.style.display='none'; folderInfo.style.display='none'; btnSaveLog.style.display='none';
     setReading(false);
   }
 
