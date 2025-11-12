@@ -12,80 +12,97 @@
   --xp-bar:#1ea31e; --axp-bar:#1a66d1; --sk-bar:#c27b17;
   --btn-active-bg: #d8e8ff;
 }
-body.minimal{
+body.dark{
   --bg:#0b0e12; --panel:#12161c; --face:#0f141a; --ink:#e6eef7; --muted:#9aa4af; --hi:#1f2937; --lo:#0b0f14; --shadow:#000;
   --ok:#22c55e; --err:#ef4444; --link:#60a5fa;
   --xp-bg:#11361a; --axp-bg:#11263e; --sk-bg:#3e2a11; --rxp-bg:#2e133e;
   --xp-bar: var(--ok); --axp-bar: var(--link); --sk-bar:#c27b17;
   --btn-active-bg: #1f2937;
 }
+body.terminal{
+  --bg:#000; --panel:#001a00; --face:#002200; --ink:#33ff33; --muted:#00aa00; --hi:#003300; --lo:#000; --shadow:#000;
+  --ok:#00ff00; --err:#ff0000; --link:#00ffff;
+  --xp-bg:#002200; --axp-bg:#001a33; --sk-bg:#221a00; --rxp-bg:#1a002a;
+  --xp-bar:#00ff00; --axp-bar:#00ffff; --sk-bar:#ffff00;
+  --btn-active-bg: #003300;
+}
+body.terminal .window{box-shadow:none;border:2px solid #00aa00}
+body.terminal .group{box-shadow:none;border:1px solid #003300}
+body.terminal .card{box-shadow:none;border:1px solid #003300}
+body.terminal .feed, body.terminal .table, body.terminal .pane{border-color:#003300}
+
+.collapsible-header{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.collapsible-header::after{content:'▼';font-size:10px;transition:transform .2s}
+.group.collapsed .collapsible-header::after{transform:rotate(-90deg)}
+.group.collapsed .collapsible-content{display:none}
+
 html,body{height:100%}
 body{margin:0;padding:10px;background:var(--bg);color:var(--ink);font:13px/1.35 "MS Sans Serif",Tahoma,Segoe UI,Arial,sans-serif;transition:background .2s,color .2s}
 a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
 .window{background:var(--face);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi), inset -2px -2px 0 var(--shadow), inset 2px 2px 0 #e9e9e9}
-body.minimal .window{box-shadow:none;border:1px solid var(--hi)}
+body.dark .window{box-shadow:none;border:1px solid var(--hi)}
 .titlebar{background:linear-gradient(90deg,#001a66,#0b6bd6);color:#fff;font-weight:bold;padding:5px 8px;display:flex;align-items:center;gap:8px}
-body.minimal .titlebar{background:#0f172a}
+body.dark .titlebar{background:#0f172a}
 .badge{background:#000;color:#fff;padding:1px 6px;border:1px solid #fff;font-weight:700}
 .content{padding:8px}
 .grid{display:grid;grid-template-columns:320px 1fr;gap:10px}
 .group{background:var(--panel);padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi);margin-bottom:10px}
-body.minimal .group{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
+body.dark .group{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
 .group h3{margin:0 0 6px 0;font-size:13px;font-weight:bold}
 .row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
 .small{font-size:12px;color:var(--muted)}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
 .input,select{background:#fff;color:#000;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi);padding:3px 5px}
-body.minimal .input, body.minimal select{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
+body.dark .input, body.dark select{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
 .input.w{width:160px}
 .btn{background:#ddd;color:#000;padding:3px 8px;cursor:pointer;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi)}
 .btn:active{border-top-color:var(--lo);border-left-color:var(--lo);border-right-color:var(--hi);border-bottom-color:var(--hi)}
 .btn.ghost{opacity:.85}
 .btn.alt{font-weight:bold}
-body.minimal .btn{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
+body.dark .btn{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
 .drop{display:flex;align-items:center;justify-content:center;height:76px;text-align:center;background:#fff;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .drop{background:var(--face)}
+body.dark .drop{background:var(--face)}
 .drop.dragover{outline:1px dotted var(--ink)}
 .statusbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px;background:var(--panel);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .statusbar{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
+body.dark .statusbar{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
 .dot{width:10px;height:10px;background:#777;display:inline-block;border:1px solid #000}
 .dot.ok{background:var(--ok)} .dot.err{background:var(--err)}
 .table{background:#fff;color:#000;height:320px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .table{background:var(--face);color:var(--ink)}
+body.dark .table{background:var(--face);color:var(--ink)}
 .table pre{margin:0;font-size:12px}
 .panes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pane{background:#fff;height:170px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .pane{background:var(--face)}
+body.dark .pane{background:var(--face)}
 .pane pre{margin:0;font-size:12px}
 .path{max-width:260px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
 kbd{border:1px solid #000;padding:0 3px;background:#fff}
 .dim{color:#6f6f6f}
 .pill{display:inline-block;padding:0 6px;border:1px solid #000;font-weight:bold;background:#fff}
-body.minimal .pill{border-color:var(--hi); background: var(--panel);}
+body.dark .pill{border-color:var(--hi); background: var(--panel);}
 .pill.keep{background:#eaf7ea}.pill.discard{background:#f8eaea}
 .pill.xp{background:var(--xp-bg)} .pill.axp{background:var(--axp-bg)} .pill.sk{background:var(--sk-bg)} .pill.rxp{background:var(--rxp-bg)}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #000;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .chip{background:var(--face);border:1px solid var(--hi);border-radius:10px}
+body.dark .chip{background:var(--face);border:1px solid var(--hi);border-radius:10px}
 .kpiVal{font-weight:bold}.kpiSub{font-size:12px;color:#333}
-body.minimal .kpiSub{color:var(--muted)}
+body.dark .kpiSub{color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .meter{height:10px;background:#fff;border:1px solid #000;border-top-color:#fff;border-left-color:#fff;overflow:hidden}
-body.minimal .meter{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+body.dark .meter{background:var(--face);border:1px solid var(--hi);border-radius:8px}
 .bar{height:100%;width:0%}
 .bar.xp{background:var(--xp-bar)}.bar.axp{background:var(--axp-bar)}.bar.sk{background:var(--sk-bar)}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .card{background:#fff;border:1px solid #000;padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .card{background:var(--face);border:1px solid var(--hi);border-radius:10px}
+body.dark .card{background:var(--face);border:1px solid var(--hi);border-radius:10px}
 .card h4{margin:0 0 6px 0;font-size:12px}
 .metaRow{display:flex;justify-content:space-between;font-size:12px}
 .feed{background:#fff;border:1px solid #000;padding:6px;height:150px;overflow:auto;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
-body.minimal .feed{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+body.dark .feed{background:var(--face);border:1px solid var(--hi);border-radius:8px}
 .feed .line{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 .feed .when{color:#666;margin-left:6px}
-body.minimal .feed .when{color: var(--muted);}
+body.dark .feed .when{color: var(--muted);}
 .toolbar{display:flex;gap:6px;flex-wrap:wrap}
 .segment{display:inline-flex;border:1px solid #000;background:#fff}
-body.minimal .segment{border:1px solid var(--hi);border-radius:8px;background:var(--face)}
+body.dark .segment{border:1px solid var(--hi);border-radius:8px;background:var(--face)}
 .segment button{border:0;background:transparent;padding:3px 8px;cursor:pointer; color: var(--ink);}
 .segment button.active{background:var(--btn-active-bg)}
 .styleSwitch{margin-left:auto;display:flex;align-items:center;gap:6px}
@@ -119,10 +136,11 @@ label span { cursor: help; }
       <span class="badge">XANALYTICS</span>
       <span>Live Analytics</span>
       <div class="styleSwitch small">
-        Style:
+        Theme:
         <select id="styleSel" class="input">
           <option value="classic">Classic</option>
-          <option value="minimal">Minimal</option>
+          <option value="dark">Dark</option>
+          <option value="terminal">Terminal</option>
         </select>
       </div>
     </div>
@@ -152,18 +170,34 @@ label span { cursor: help; }
             </div>
           </div>
           
-          <div class="group">
-            <h3>Instructions</h3>
-            <ul class="instructions">
-                <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
-                <li><b>Save For Later:</b> After loading a log with persistent access <span class="status-badge live" style="font-size:9px">LIVE</span>, click "💾 Save This Log" to save it for quick access. View saved logs anytime via "💾 Saved Logs" button.</li>
-                <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
-                <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
-            </ul>
+          <div class="group" id="instructionsGroup">
+            <h3 class="collapsible-header" id="instructionsHeader">Instructions</h3>
+            <div class="collapsible-content">
+              <ul class="instructions">
+                  <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
+                  <li><b>Save For Later:</b> After loading a log with persistent access <span class="status-badge live" style="font-size:9px">LIVE</span>, click "💾 Save This Log" to save it for quick access. View saved logs anytime via "💾 Saved Logs" button.</li>
+                  <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
+                  <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
+              </ul>
+            </div>
           </div>
 
           <div class="group">
             <h3>Settings</h3>
+            <div class="row">
+              <label>Lines to load on open/refresh:</label>
+              <select id="reloadLinesCount" class="input" style="width:auto">
+                <option value="25">Last 25</option>
+                <option value="50">Last 50</option>
+                <option value="75">Last 75</option>
+                <option value="100">Last 100</option>
+                <option value="200" selected>Last 200</option>
+              </select>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">How many recent log lines to load when opening or refreshing</div>
+
+            <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
+
             <div class="row">
               <label><input id="inclDiscarded" type="checkbox" checked/> Base % on all events</label>
             </div>
@@ -352,7 +386,12 @@ label span { cursor: help; }
   const savedPurge = document.getElementById('savedPurge');
   const savedStatus = document.getElementById('savedStatus');
 
+  const instructionsGroup = document.getElementById('instructionsGroup');
+  const instructionsHeader = document.getElementById('instructionsHeader');
+  const reloadLinesCount = document.getElementById('reloadLinesCount');
+
   const supportsFS = 'showOpenFilePicker' in window && 'indexedDB' in window;
+  let MAX_INITIAL_LINES = 200; // Dynamic, updated from settings
 
   const fileInfo = document.getElementById('fileInfo');
 
@@ -402,15 +441,19 @@ label span { cursor: help; }
   const xpInclude={xp:true,axp:true,sk:true,rxp:true};
 
   /* ===== IndexedDB for Saved Logs ===== */
-  const DB_NAME='xanalyticsFS', DB_VER=1, STORE='savedLogs';
+  const DB_NAME='xanalyticsFS', DB_VER=2, STORE='savedLogs';
   let db=null;
 
   function idbOpen(){
     return new Promise((resolve,reject)=>{
       const req=indexedDB.open(DB_NAME, DB_VER);
-      req.onupgradeneeded=()=>{
-        const d=req.result;
-        if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id'});
+      req.onupgradeneeded=(e)=>{
+        const d=e.target.result;
+        // Delete old store if it exists to ensure clean schema
+        if(d.objectStoreNames.contains(STORE)) {
+          d.deleteObjectStore(STORE);
+        }
+        d.createObjectStore(STORE,{keyPath:'id'});
       };
       req.onsuccess=()=>resolve(req.result);
       req.onerror=()=>reject(req.error);
@@ -614,14 +657,51 @@ label span { cursor: help; }
 
   function updateMetrics(){ metricsInline.textContent=`lines=${linesRead} hits=${parseHits} misses=${parseMisses} rot=${rotationCount} err=${readErrors} kept=${totalKept} discarded=${totalDiscarded}`; }
 
+  async function readLastLinesFromFile(file, maxLines){
+    const CHUNK = 64 * 1024; // 64KB chunks
+    let pos = file.size;
+    let buffer = '';
+    let lines = [];
+
+    while(pos > 0 && lines.length <= maxLines){
+      const start = Math.max(0, pos - CHUNK);
+      const slice = file.slice(start, pos);
+      const text = await slice.text();
+      buffer = text + buffer;
+      const parts = buffer.split(/\r?\n/);
+      buffer = parts.shift() || '';
+      lines = parts.concat(lines);
+      pos = start;
+    }
+    if(buffer) lines.unshift(buffer);
+    return lines.filter(Boolean).slice(-maxLines);
+  }
+
+  async function loadInitialLines(file){
+    try{
+      const lines = await readLastLinesFromFile(file, MAX_INITIAL_LINES);
+      for(const line of lines){
+        if(line && line.trim()) parseLine(line);
+      }
+    }catch(e){
+      pushDebug('LOAD_INITIAL_ERR: '+e);
+    }
+  }
+
   async function startTailWithHandle(handle){
     state.fileHandle=handle; state.fileObj=null; state.isLive=true;
     try{
       const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
       fileInfo.style.display='block';
-      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Starting at EOF (${fmt(f.size)} bytes)`;
+      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
       if(supportsFS) btnSaveLog.style.display='inline-block';
-      xpReset(); setReading(true);
+      xpReset();
+
+      // Load initial lines
+      await loadInitialLines(f);
+      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Monitoring (${fmt(f.size)} bytes)`;
+
+      setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=800;
       state.tailTimer=setInterval(async ()=>{
@@ -639,9 +719,15 @@ label span { cursor: help; }
     try{
       const size=file.size; state.offset=size; state.startTs=now();
       fileInfo.style.display='block';
-      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Starting at EOF (${fmt(size)} bytes)`;
+      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
       btnSaveLog.style.display='none';
-      xpReset(); setReading(true);
+      xpReset();
+
+      // Load initial lines
+      await loadInitialLines(file);
+      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Monitoring (${fmt(size)} bytes)`;
+
+      setReading(true);
       if(state.tailTimer) clearInterval(state.tailTimer);
       const poll=1200;
       state.tailTimer=setInterval(async ()=>{
@@ -970,7 +1056,22 @@ label span { cursor: help; }
     [fxp,faxp,fsk,frxp].forEach(ch=>ch.addEventListener('change',()=>{xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;}));
   }
 
-  styleSel.addEventListener('change',()=>{document.body.classList.toggle('minimal', styleSel.value==='minimal')});
+  // Theme switching
+  styleSel.addEventListener('change',()=>{
+    document.body.classList.remove('classic','dark','terminal');
+    const theme = styleSel.value;
+    if(theme !== 'classic') document.body.classList.add(theme);
+  });
+
+  // Collapsible Instructions
+  instructionsHeader.addEventListener('click',()=>{
+    instructionsGroup.classList.toggle('collapsed');
+  });
+
+  // Reload lines count setting
+  reloadLinesCount.addEventListener('change',()=>{
+    MAX_INITIAL_LINES = parseInt(reloadLinesCount.value,10);
+  });
 
   function resetSession(clearStats){
     if(state.tailTimer){clearInterval(state.tailTimer); state.tailTimer=null;}
