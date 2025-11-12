@@ -29,19 +29,32 @@ body.terminal{
 body.terminal .window{box-shadow:none;border:2px solid #00aa00}
 body.terminal .titlebar{background:linear-gradient(90deg,#001a00,#00aa00)}
 body.terminal .group{box-shadow:none;border:1px solid #003300}
-body.terminal .card{box-shadow:none;border:1px solid #003300}
-body.terminal .feed, body.terminal .table, body.terminal .pane{border-color:#003300}
+body.terminal .card{background:#000;border:1px solid #003300;box-shadow:none}
+body.terminal .card h4{color:#33ff33}
+body.terminal .feed{background:#000;border-color:#003300;box-shadow:none}
+body.terminal .feed .line{color:#33ff33}
+body.terminal .feed .when{color:#00aa00}
+body.terminal .table{background:#000;box-shadow:none;border:1px solid #003300}
+body.terminal .table pre{color:#33ff33}
+body.terminal .pane{background:#000;box-shadow:none;border:1px solid #003300}
+body.terminal .pane pre{color:#33ff33}
 body.terminal .input, body.terminal select{background:#000;color:#33ff33;border-color:#00aa00}
 body.terminal .btn{background:#002200;color:#33ff33;border-color:#00aa00}
 body.terminal .btn:active{background:#003300}
 body.terminal .drop{background:#000;border-color:#00aa00}
-body.terminal .table{background:#000}
-body.terminal .pane{background:#000}
-body.terminal .pill{background:#001a00;border-color:#00aa00}
-body.terminal .chip{background:#001a00}
-body.terminal .segment{background:#000}
-body.terminal .meter{background:#000}
+body.terminal .pill{background:#001a00;border-color:#00aa00;color:#33ff33}
+body.terminal .chip{background:#001a00;border:1px solid #003300;box-shadow:none}
+body.terminal .kpiVal{color:#00ff00}
+body.terminal .kpiSub{color:#00aa00}
+body.terminal .segment{background:#000;border-color:#00aa00}
+body.terminal .segment button{color:#33ff33}
+body.terminal .meter{background:#000;border:1px solid #00aa00}
+body.terminal .metaRow{color:#33ff33}
+body.terminal .small{color:#00aa00}
+body.terminal .dim{color:#006600}
 body.terminal .statusbar{background:#000;border-color:#00aa00}
+body.terminal kbd{background:#002200;color:#33ff33;border-color:#00aa00}
+body.terminal .sumline{color:#00aa00}
 
 .collapsible-header{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
 .collapsible-header::after{content:'▼';font-size:10px;transition:transform .2s}
