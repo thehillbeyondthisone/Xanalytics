@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Xanalytics · Live Analytics</title>
+<style>
+:root{
+  --bg:#c8c8c8; --panel:#dcd9d4; --face:#cfcfcf; --ink:#000; --muted:#444; --hi:#fff; --lo:#3f3f3f; --shadow:#000;
+  --ok:#0a8a0a; --err:#b10000; --link:#003399;
+  --xp-bg:#e7ffe7; --axp-bg:#e7f0ff; --sk-bg:#fff4e2; --rxp-bg:#f4e7ff;
+  --xp-bar:#1ea31e; --axp-bar:#1a66d1; --sk-bar:#c27b17;
+  --btn-active-bg: #d8e8ff;
+}
+body.dark{
+  --bg:#0b0e12; --panel:#12161c; --face:#0f141a; --ink:#e6eef7; --muted:#9aa4af; --hi:#1f2937; --lo:#0b0f14; --shadow:#000;
+  --ok:#22c55e; --err:#ef4444; --link:#60a5fa;
+  --xp-bg:#11361a; --axp-bg:#11263e; --sk-bg:#3e2a11; --rxp-bg:#2e133e;
+  --xp-bar: var(--ok); --axp-bar: var(--link); --sk-bar:#c27b17;
+  --btn-active-bg: #1f2937;
+}
+body.terminal{
+  --bg:#000; --panel:#001a00; --face:#002200; --ink:#33ff33; --muted:#00aa00; --hi:#003300; --lo:#000; --shadow:#000;
+  --ok:#00ff00; --err:#ff0000; --link:#00ffff;
+  --xp-bg:#002200; --axp-bg:#001a33; --sk-bg:#221a00; --rxp-bg:#1a002a;
+  --xp-bar:#00ff00; --axp-bar:#00ffff; --sk-bar:#ffff00;
+  --btn-active-bg: #003300;
+}
+body.terminal .window{box-shadow:none;border:2px solid #00aa00}
+body.terminal .titlebar{background:linear-gradient(90deg,#001a00,#00aa00)}
+body.terminal .group{box-shadow:none;border:1px solid #003300}
+body.terminal .card{background:#000;border:1px solid #003300;box-shadow:none}
+body.terminal .card h4{color:#33ff33}
+body.terminal .feed{background:#000;border-color:#003300;box-shadow:none}
+body.terminal .feed .line{color:#33ff33}
+body.terminal .feed .when{color:#00aa00}
+body.terminal .table{background:#000;box-shadow:none;border:1px solid #003300}
+body.terminal .table pre{color:#33ff33}
+body.terminal .pane{background:#000;box-shadow:none;border:1px solid #003300}
+body.terminal .pane pre{color:#33ff33}
+body.terminal .input, body.terminal select{background:#000;color:#33ff33;border-color:#00aa00}
+body.terminal .btn{background:#002200;color:#33ff33;border-color:#00aa00}
+body.terminal .btn:active{background:#003300}
+body.terminal .drop{background:#000;border-color:#00aa00}
+body.terminal .pill{background:#001a00;border-color:#00aa00;color:#33ff33}
+body.terminal .chip{background:#001a00;border:1px solid #003300;box-shadow:none}
+body.terminal .kpiVal{color:#00ff00}
+body.terminal .kpiSub{color:#00aa00}
+body.terminal .segment{background:#000;border-color:#00aa00}
+body.terminal .segment button{color:#33ff33}
+body.terminal .meter{background:#000;border:1px solid #00aa00}
+body.terminal .metaRow{color:#33ff33}
+body.terminal .small{color:#00aa00}
+body.terminal .dim{color:#006600}
+body.terminal .statusbar{background:#000;border-color:#00aa00}
+body.terminal kbd{background:#002200;color:#33ff33;border-color:#00aa00}
+body.terminal .sumline{color:#00aa00}
+
+.collapsible-header{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.collapsible-header::after{content:'▼';font-size:10px;transition:transform .2s}
+.group.collapsed .collapsible-header::after{transform:rotate(-90deg)}
+.group.collapsed .collapsible-content{display:none}
+
+html,body{height:100%}
+body{margin:0;padding:10px;background:var(--bg);color:var(--ink);font:13px/1.35 "MS Sans Serif",Tahoma,Segoe UI,Arial,sans-serif;transition:background .2s,color .2s}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+.window{background:var(--face);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi), inset -2px -2px 0 var(--shadow), inset 2px 2px 0 #e9e9e9}
+body.dark .window{box-shadow:none;border:1px solid var(--hi)}
+.titlebar{background:linear-gradient(90deg,#001a66,#0b6bd6);color:#fff;font-weight:bold;padding:5px 8px;display:flex;align-items:center;gap:8px}
+body.dark .titlebar{background:#0f172a}
+.badge{background:#000;color:#fff;padding:1px 6px;border:1px solid #fff;font-weight:700}
+.content{padding:8px}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:10px}
+.group{background:var(--panel);padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi);margin-bottom:10px}
+body.dark .group{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
+.group h3{margin:0 0 6px 0;font-size:13px;font-weight:bold}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.input,select{background:#fff;color:#000;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi);padding:3px 5px}
+body.dark .input, body.dark select{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
+.input.w{width:160px}
+.btn{background:#ddd;color:#000;padding:3px 8px;cursor:pointer;border:1px solid var(--lo);border-top-color:var(--hi);border-left-color:var(--hi)}
+.btn:active{border-top-color:var(--lo);border-left-color:var(--lo);border-right-color:var(--hi);border-bottom-color:var(--hi)}
+.btn.ghost{opacity:.85}
+.btn.alt{font-weight:bold}
+body.dark .btn{background:var(--face);color:var(--ink);border:1px solid var(--hi);border-radius:8px}
+.drop{display:flex;align-items:center;justify-content:center;height:76px;text-align:center;background:#fff;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .drop{background:var(--face)}
+.drop.dragover{outline:1px dotted var(--ink)}
+.statusbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px;background:var(--panel);box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .statusbar{box-shadow:none;border:1px solid var(--hi);border-radius:10px}
+.dot{width:10px;height:10px;background:#777;display:inline-block;border:1px solid #000}
+.dot.ok{background:var(--ok)} .dot.err{background:var(--err)}
+.table{background:#fff;color:#000;height:320px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .table{background:var(--face);color:var(--ink)}
+.table pre{margin:0;font-size:12px}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pane{background:#fff;height:170px;overflow:auto;padding:6px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .pane{background:var(--face)}
+.pane pre{margin:0;font-size:12px}
+.path{max-width:260px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+kbd{border:1px solid #000;padding:0 3px;background:#fff}
+.dim{color:#6f6f6f}
+.pill{display:inline-block;padding:0 6px;border:1px solid #000;font-weight:bold;background:#fff}
+body.dark .pill{border-color:var(--hi); background: var(--panel);}
+.pill.keep{background:#eaf7ea}.pill.discard{background:#f8eaea}
+.pill.xp{background:var(--xp-bg)} .pill.axp{background:var(--axp-bg)} .pill.sk{background:var(--sk-bg)} .pill.rxp{background:var(--rxp-bg)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #000;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .chip{background:var(--face);border:1px solid var(--hi);border-radius:10px}
+.kpiVal{font-weight:bold}.kpiSub{font-size:12px;color:#333}
+body.dark .kpiSub{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.meter{height:10px;background:#fff;border:1px solid #000;border-top-color:#fff;border-left-color:#fff;overflow:hidden}
+body.dark .meter{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+.bar{height:100%;width:0%}
+.bar.xp{background:var(--xp-bar)}.bar.axp{background:var(--axp-bar)}.bar.sk{background:var(--sk-bar)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.card{background:#fff;border:1px solid #000;padding:8px;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .card{background:var(--face);border:1px solid var(--hi);border-radius:10px}
+.card h4{margin:0 0 6px 0;font-size:12px}
+.metaRow{display:flex;justify-content:space-between;font-size:12px}
+.feed{background:#fff;border:1px solid #000;padding:6px;height:150px;overflow:auto;box-shadow:inset -1px -1px 0 var(--lo), inset 1px 1px 0 var(--hi)}
+body.dark .feed{background:var(--face);border:1px solid var(--hi);border-radius:8px}
+.feed .line{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.feed .when{color:#666;margin-left:6px}
+body.dark .feed .when{color: var(--muted);}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap}
+.segment{display:inline-flex;border:1px solid #000;background:#fff}
+body.dark .segment{border:1px solid var(--hi);border-radius:8px;background:var(--face)}
+.segment button{border:0;background:transparent;padding:3px 8px;cursor:pointer; color: var(--ink);}
+.segment button.active{background:var(--btn-active-bg)}
+.styleSwitch{margin-left:auto;display:flex;align-items:center;gap:6px}
+.sumline{font-size:12px;margin-top:4px;color:var(--muted)}
+ul.instructions{margin: 4px 0 4px 16px; padding: 0; font-size:12px; color: var(--muted);}
+ul.instructions li { margin-bottom: 4px; }
+label span { cursor: help; }
+
+/* Modals */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:10020;
+}
+.modal{background:var(--panel); border:1px solid var(--hi); border-radius:12px; padding:16px; width:min(620px,90vw); max-height:80vh; overflow:auto}
+.modal h4{margin:0 0 12px 0; font-size:15px; border-bottom:1px solid var(--hi); padding-bottom:8px}
+.modal .modal-body{margin:12px 0}
+.modal .list{border:1px solid var(--hi); border-radius:8px; padding:8px; background:var(--face); max-height:46vh; overflow:auto}
+.saved-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px; border-bottom:1px dashed var(--hi)}
+.saved-item:last-child{border-bottom:0}
+.saved-label{font-weight:600; font-size:13px; color:var(--ink)}
+.saved-path{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:11px; word-break:break-all; margin-top:2px}
+.saved-actions{display:flex; gap:6px}
+.status-badge{display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600}
+.status-badge.live{background:var(--ok); color:#fff}
+.status-badge.static{background:#666; color:#ddd}
+
+</style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <span class="badge">XANALYTICS</span>
+      <span>Live Analytics</span>
+      <div class="styleSwitch small">
+        Theme:
+        <select id="styleSel" class="input">
+          <option value="classic">Classic</option>
+          <option value="dark">Dark</option>
+          <option value="terminal">Terminal</option>
+        </select>
+      </div>
+    </div>
+    <div class="content">
+      <div class="grid">
+        <section>
+          <div class="group">
+            <h3>Source</h3>
+            <div class="drop" id="drop" tabindex="0">
+              <div>
+                <div style="font-weight:800">Drop log file here</div>
+                <div class="small">Quick and easy backup method</div>
+              </div>
+            </div>
+            <div id="fileInfo" class="small" style="display:none;margin-top:6px"></div>
+            <div id="folderInfo" class="small" style="display:none;margin-top:6px;padding:6px;background:var(--xp-bg);border:1px solid var(--ok)"></div>
+            <div class="toolbar" style="margin-top:6px">
+              <button class="btn alt" id="btnBrowseFolder" title="Browse your Anarchy Online Prefs folder to find character logs">Find My Logs</button>
+              <button class="btn" id="btnAttach" title="Select a single log file manually">Browse Files</button>
+              <button class="btn" id="btnSavedLogs" title="Open saved character logs">💾 Saved Logs</button>
+            </div>
+            <div class="toolbar" style="margin-top:6px">
+              <button class="btn" id="btnSaveLog" title="Save current log for quick access later" style="display:none">💾 Save This Log</button>
+              <button class="btn" id="btnRefresh" title="Reload the last X lines from current log" style="display:none">🔄 Refresh</button>
+              <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
+              <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
+              <button class="btn ghost" id="btnReset" title="Unload current log and reset all statistics">Reset All</button>
+            </div>
+          </div>
+          
+          <div class="group" id="instructionsGroup">
+            <h3 class="collapsible-header" id="instructionsHeader">Instructions</h3>
+            <div class="collapsible-content">
+              <ul class="instructions">
+                  <li><b>Find Your Logs:</b> Click "Find My Logs" button. Navigate to:<br/><code style="font-size:10px;display:block;margin:4px 0;padding:2px">C:\Users\[YourName]\AppData\Local\Funcom\Anarchy Online\[UniqueID]\Anarchy Online\Prefs\</code>You'll see all your character folders listed - just click "Open" next to the one you want!</li>
+                  <li><b>Save For Later:</b> After loading a log with persistent access <span class="status-badge live" style="font-size:9px">LIVE</span>, click "💾 Save This Log" to save it for quick access. View saved logs anytime via "💾 Saved Logs" button.</li>
+                  <li><b>Auto-Start:</b> Monitoring starts automatically when you select a log. Data appears in real-time as new entries are written.</li>
+                  <li><b>Quick Tip:</b> Leave Xanalytics open while playing to see live statistics. The dropzone is there as a backup if you prefer drag-and-drop.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3>Settings</h3>
+            <div class="row">
+              <label>Lines to load on open/refresh:</label>
+              <select id="reloadLinesCount" class="input" style="width:auto">
+                <option value="0" selected>None (0 lines)</option>
+                <option value="25">Last 25</option>
+                <option value="50">Last 50</option>
+                <option value="75">Last 75</option>
+                <option value="100">Last 100</option>
+                <option value="200">Last 200</option>
+              </select>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">How many recent log lines to load when opening or refreshing (0 = start fresh)</div>
+
+            <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
+
+            <div class="row">
+              <label><input id="inclDiscarded" type="checkbox" checked/> Base % on all events</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Percentages include both kept and discarded items in the calculation</div>
+
+            <div class="row">
+              <label><input id="normalizeVisible" type="checkbox"/> Renormalize % to visible</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Recalculates % so visible rows add up to 100% (useful after filtering)</div>
+
+            <div class="row">
+              <label><input id="dimDiscardedOnly" type="checkbox" checked/> Dim discarded-only rows</label>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Makes items you've never kept less prominent in the table</div>
+
+            <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
+
+            <div class="row">
+              <label>Rarity</label>
+              <select id="rarityFilter" class="input">
+                <option value="all">All</option>
+                <option value="uncommon">Uncommon+</option>
+                <option value="rare">Rare+</option>
+                <option value="epic">Epic</option>
+              </select>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter by minimum rarity level (hides common items when set higher)</div>
+
+            <div class="row">
+              <label>Sort by</label>
+              <select id="eventSortBy" class="input">
+                <option value="events">Events</option>
+                <option value="percent">Percent</option>
+                <option value="kept">Kept</option>
+                <option value="discarded">Discarded</option>
+                <option value="name">Name</option>
+                <option value="last">Last Seen</option>
+              </select>
+              <select id="eventSortDir" class="input">
+                <option value="desc">Desc</option>
+                <option value="asc">Asc</option>
+              </select>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Choose how to sort the metrics table</div>
+
+            <div class="row">
+              <input id="eventSearch" class="input w" placeholder="Search event or source…"/>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Filter table by item name or source (e.g., mob name)</div>
+
+            <div class="row">
+              <label>Min events</label>
+              <input id="eventMinEvents" type="number" class="input" value="0" style="width:70px"/>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">Hide items seen fewer than this many times</div>
+
+            <div class="row">
+              <span class="segment">
+                <button id="viewAll" class="active" title="Show all items">All</button>
+                <button id="viewKept" title="Show only items that have been kept at least once">Kept</button>
+                <button id="viewDiscarded" title="Show only items that have been discarded at least once">Discarded</button>
+                <button id="viewDiscardedOnly" title="Show only items that you have discarded but never kept.">Discarded-only</button>
+              </span>
+            </div>
+            <div class="small" style="margin-left:20px;margin-top:2px">Filter by whether you kept, discarded, or both</div>
+          </div>
+        </section>
+
+        <section>
+          <div class="group">
+            <h3>Metrics Table</h3>
+            <div class="table" id="table"><pre>(waiting for file…)</pre></div>
+            <div class="sumline" id="sumLine">Visible % sum: —</div>
+          </div>
+
+          <div class="group">
+            <h3>XP Metrics</h3>
+            <div class="kpis">
+              <div class="chip"><span class="pill xp">XP</span>
+                <div><div><span id="xpTotal" class="kpiVal">0</span></div>
+                <div class="kpiSub"><span id="xpRate10">0/hr</span> · <span id="xpRateSess">0/hr</span> · last <span id="xpLast">0</span></div></div>
+              </div>
+              <div class="chip"><span class="pill axp">AXP</span>
+                <div><div><span id="axpTotal" class="kpiVal">0</span></div>
+                <div class="kpiSub"><span id="axpRate10">0/hr</span> · <span id="axpRateSess">0/hr</span> · last <span id="axpLast">0</span></div></div>
+              </div>
+              <div class="chip"><span class="pill sk">SK</span>
+                <div><div><span id="skTotal" class="kpiVal">0</span></div>
+                <div class="kpiSub"><span id="skRate10">0/hr</span> · <span id="skRateSess">0/hr</span> · last <span id="skLast">0</span></div></div>
+              </div>
+              <div class="chip"><span class="pill rxp">Research</span>
+                <div><div><span id="rxpTotal" class="kpiVal">0</span></div>
+                <div class="kpiSub"><span id="rxpRate10">0/hr</span> · <span id="rxpRateSess">0/hr</span> · last <span id="rxpLast">0</span></div></div>
+              </div>
+            </div>
+
+            <div class="cards" style="margin-top:8px">
+              <div class="card">
+                <h4>XP goal</h4>
+                <div class="meter"><div class="bar xp" id="barXP"></div></div>
+                <div class="metaRow"><span id="xpNeedLabel" class="small">—</span><span id="xpETA" class="small">ETA —</span></div>
+                <div class="row"><input id="xpNeed" class="input w" type="number" placeholder="Enter XP needed…"/></div>
+              </div>
+              <div class="card">
+                <h4>AXP goal</h4>
+                <div class="meter"><div class="bar axp" id="barAXP"></div></div>
+                <div class="metaRow"><span id="axpNeedLabel" class="small">—</span><span id="axpETA" class="small">ETA —</span></div>
+                <div class="row"><input id="axpNeed" class="input w" type="number" placeholder="Enter AXP needed…"/></div>
+              </div>
+              <div class="card">
+                <h4>SK goal</h4>
+                <div class="meter"><div class="bar sk" id="barSK"></div></div>
+                <div class="metaRow"><span id="skNeedLabel" class="small">—</span><span id="skETA" class="small">ETA —</span></div>
+                <div class="row"><input id="skNeed" class="input w" type="number" placeholder="Enter SK needed…"/></div>
+              </div>
+            </div>
+
+            <div class="metaRow" style="margin-top:6px">
+              <span class="small" id="xpUptime">Uptime — 0m</span>
+              <span class="small" id="xpEvents">XP events — 0</span>
+            </div>
+
+            <div class="feed" id="xpFeed" style="margin-top:6px"><div class="small dim">(XP feed populates as you tail)</div></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="statusbar">
+        <div class="small">Xanalytics — local only</div>
+        <div class="small" style="display:flex;align-items:center;gap:8px">
+          <span class="dot" id="dot"></span><span id="statusText">Idle</span>
+          <span id="metricsInline" class="small">lines=0 hits=0 misses=0 rot=0 err=0</span>
+        </div>
+        <div class="small"><a href="#" id="exportState">Export state</a></div>
+      </div>
+    </div>
+  </div>
+
+<!-- Saved Logs Modal -->
+<div class="modal-backdrop" id="savedModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>📁 Saved Character Logs</h4>
+      <button class="btn" id="savedClose">Close</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 10px 0; color:var(--muted); font-size:12px">
+        Quickly load your favorite character logs. Works in Chrome/Edge with persistent file access.
+      </p>
+      <div class="list" id="savedList">
+        <div style="color:var(--muted); text-align:center; padding:20px">No saved logs yet</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--hi)">
+      <button class="btn ghost" id="savedPurge">Delete all saved</button>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:var(--muted)" id="savedStatus"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const short=(s,n=120)=>{if(s==null)return"";s=String(s);return s.length<=n?s:s.slice(0,n-1)+'…'};
+  const pad=(s,w)=>{s=s==null?'':String(s);if(s.length>=w)return s.slice(0,w);return s+' '.repeat(w-s.length)};
+  const htmlDecode=s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value};
+  const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const fmt=n=>Number(n||0).toLocaleString();
+  const toNum=s=>{if(s==null)return 0;if(typeof s==='number')return Math.floor(s);return parseInt(String(s).replace(/[,_\s]/g,''),10)||0};
+  const now=()=>Date.now();
+
+  const styleSel=document.getElementById('styleSel');
+
+  const btnBrowseFolder = document.getElementById('btnBrowseFolder');
+  const btnAttach = document.getElementById('btnAttach');
+  const btnSavedLogs = document.getElementById('btnSavedLogs');
+  const btnSaveLog = document.getElementById('btnSaveLog');
+  const btnRefresh = document.getElementById('btnRefresh');
+  const btnReload = document.getElementById('btnReload');
+  const btnExportCSV = document.getElementById('btnExportCSV');
+  const btnReset  = document.getElementById('btnReset');
+  const folderInfo = document.getElementById('folderInfo');
+
+  const savedModal = document.getElementById('savedModal');
+  const savedClose = document.getElementById('savedClose');
+  const savedList = document.getElementById('savedList');
+  const savedPurge = document.getElementById('savedPurge');
+  const savedStatus = document.getElementById('savedStatus');
+
+  const instructionsGroup = document.getElementById('instructionsGroup');
+  const instructionsHeader = document.getElementById('instructionsHeader');
+  const reloadLinesCount = document.getElementById('reloadLinesCount');
+
+  const supportsFS = 'showOpenFilePicker' in window && 'indexedDB' in window;
+  let MAX_INITIAL_LINES = 0; // Dynamic, updated from settings
+
+  const fileInfo = document.getElementById('fileInfo');
+
+  const parsedLog = document.getElementById('parsedLog');
+  const rawPane = document.getElementById('rawPane');
+  const debugPane = document.getElementById('debugPane');
+  const tableEl = document.getElementById('table');
+  const metricsInline = document.getElementById('metricsInline');
+  const dot = document.getElementById('dot');
+
+  const inclDiscardedChk = document.getElementById('inclDiscarded');
+  const normalizeVisibleChk = document.getElementById('normalizeVisible');
+  const dimDiscardedOnlyChk = document.getElementById('dimDiscardedOnly');
+  const rarityFilterSel = document.getElementById('rarityFilter');
+
+  const eventSortBySel = document.getElementById('eventSortBy');
+  const eventSortDirSel = document.getElementById('eventSortDir');
+  const eventSearchInp = document.getElementById('eventSearch');
+  const eventMinEventsInp = document.getElementById('eventMinEvents');
+
+  const viewAll=document.getElementById('viewAll');
+  const viewKept=document.getElementById('viewKept');
+  const viewDiscarded=document.getElementById('viewDiscarded');
+  const viewDiscardedOnly=document.getElementById('viewDiscardedOnly');
+
+  const sumLine=document.getElementById('sumLine');
+
+  const fxp=document.getElementById('fxp'), faxp=document.getElementById('faxp'), fsk=document.getElementById('fsk'), frxp=document.getElementById('frxp');
+
+  const xpd={
+    total:{xp:gid('xpTotal'),axp:gid('axpTotal'),sk:gid('skTotal'),rxp:gid('rxpTotal')},
+    rate10:{xp:gid('xpRate10'),axp:gid('axpRate10'),sk:gid('skRate10'),rxp:gid('rxpRate10')},
+    rateS:{xp:gid('xpRateSess'),axp:gid('axpRateSess'),sk:gid('skRateSess'),rxp:gid('rxpRateSess')},
+    last:{xp:gid('xpLast'),axp:gid('axpLast'),sk:gid('skLast'),rxp:gid('rxpLast')},
+    need:{xp:gid('xpNeed'),axp:gid('axpNeed'),sk:gid('skNeed')},
+    needL:{xp:gid('xpNeedLabel'),axp:gid('axpNeedLabel'),sk:gid('skNeedLabel')},
+    eta:{xp:gid('xpETA'),axp:gid('axpETA'),sk:gid('skETA')},
+    bar:{xp:gid('barXP'),axp:gid('barAXP'),sk:gid('barSK')},
+    uptime:gid('xpUptime'),events:gid('xpEvents'),feed:gid('xpFeed')
+  };
+  function gid(id){return document.getElementById(id)}
+
+  const state={fileHandle:null,fileObj:null,offset:0,tailTimer:null,reading:false,paused:false,startTs:0,isLive:false,currentLabel:''};
+  let linesRead=0,parseHits=0,parseMisses=0,rotationCount=0,readErrors=0,totalKept=0,totalDiscarded=0;
+  const stats={}; const debugLog=[]; const rawLines=[]; let eventView='all';
+
+  const xpInclude={xp:true,axp:true,sk:true,rxp:true};
+
+  /* ===== IndexedDB for Saved Logs ===== */
+  const DB_NAME='xanalyticsFS', DB_VER=2, STORE='savedLogs';
+  let db=null;
+
+  function idbOpen(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded=(e)=>{
+        const d=e.target.result;
+        // Delete old store if it exists to ensure clean schema
+        if(d.objectStoreNames.contains(STORE)) {
+          d.deleteObjectStore(STORE);
+        }
+        d.createObjectStore(STORE,{keyPath:'id'});
+      };
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    });
+  }
+  async function getDB(){ if(!db) db=await idbOpen(); return db; }
+
+  async function idbPut(record){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put(record);
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbAll(){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readonly');
+      const st=tx.objectStore(STORE);
+      const out=[];
+      st.openCursor().onsuccess=e=>{
+        const c=e.target.result;
+        if(c){ out.push(c.value); c.continue(); }
+        else{ res(out); }
+      };
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbDel(id){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+
+  async function idbClear(){
+    const d=await getDB();
+    return new Promise((res,rej)=>{
+      const tx=d.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete=()=>res();
+      tx.onerror=()=>rej(tx.error);
+    });
+  }
+  const rxXP=/You\s+(?:gained|received)\s+([\d,]+)\s+(?:XP|experience)\b(?!.*Alien)/i;
+  const rxAXP=/Alien\s+Experience\s+Points.*?([\d,]+)/i;
+  const rxSK=/(?:You\s+gained\s+)?([\d,]+)\s+(?:Shadowknowledge|SK)\b/i;
+  const rxRXP=/([\d,]+)\s+of\s+your\s+XP\s+were\s+allocated\s+to\s+your\s+personal\s+research/i;
+
+  const xpState={start:null,totals:{xp:0,axp:0,sk:0,rxp:0},last:{xp:0,axp:0,sk:0,rxp:0},events:0,samples:{xp:[],axp:[],sk:[],rxp:[]},sess:{xp:0,axp:0,sk:0,rxp:0},goals:{xp:0,axp:0,sk:0}};
+
+  const rxItemref=/<a\s+href\s*=\s*"itemref:\/\/(\d+)(?:\/(\d+))?(?:\/(\d+))?">(.*?)<\/a>/ig;
+  const rxAction=/(?:^|\W)(deleted|looted|picked up|picked|received|acquired|added to your inventory|added)(?:\W|$)/i;
+  const rxLoose=/\b(deleted|looted|picked up|picked|received|acquired|added)\b/i;
+  const rxSource=/\bfrom\s+([A-Za-z0-9 '\-\.]{2,80})/i;
+
+  function rarityOf(p){if(p>=5)return'Common';if(p>=1)return'Uncommon';if(p>=0.2)return'Rare';return'Epic'}
+
+  function pushDebug(s){
+    const t=`[${new Date().toISOString()}] ${s}`; debugLog.push(t); if(debugPane && debugPane.style.display!=='none'){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent+=(pre.textContent?'\n':'')+t; debugPane.innerHTML=''; debugPane.appendChild(pre); debugPane.scrollTop=debugPane.scrollHeight;}
+  }
+  function pushRaw(ln){
+    rawLines.push(ln); if(rawPane && rawPane.style.display!=='none'){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n'); rawPane.scrollTop=rawPane.scrollHeight;}
+  }
+  function pushParsed(tag,text){
+    if(!parsedLog) return;
+    const line=document.createElement('div'); line.className='line';
+    const pill=document.createElement('span'); pill.className='pill '+tag; pill.textContent=tag.toUpperCase();
+    const span=document.createElement('span'); span.textContent=' '+text;
+    line.appendChild(pill); line.appendChild(span);
+    parsedLog.appendChild(line); parsedLog.scrollTop=parsedLog.scrollHeight;
+  }
+
+  function xpPush(key,val){
+    const t=now();
+    xpState.totals[key]+=val; xpState.last[key]=val; xpState.events++; xpState.samples[key].push({t,v:val}); xpState.sess[key]+=val;
+    const cut=t-10*60*1000; ['xp','axp','sk','rxp'].forEach(k=>{const a=xpState.samples[k]; while(a.length && a[0].t<cut) a.shift();});
+    refreshXPUI(); pushXPFeed(key,val,t);
+  }
+  function rate10(k){const a=xpState.samples[k]; if(!a.length) return 0; const sum=a.reduce((x,y)=>x+y.v,0); const span=(a[a.length-1].t-a[0].t)/1000||1; return sum/span*3600}
+  function rateSess(k){if(!xpState.start)return 0; const h=(now()-xpState.start)/3600000; return h>0?xpState.sess[k]/h:0}
+  function setBar(el,need,have,lbl){const N=toNum(need),H=toNum(have); if(!N){el.style.width='0%'; if(lbl) lbl.textContent='—'; return} const pct=Math.max(0,Math.min(100,H/N*100)); el.style.width=pct.toFixed(2)+'%'; if(lbl) lbl.textContent=`${fmt(H)} / ${fmt(N)} (${pct.toFixed(1)}%)`}
+  function etaStr(need,have,perHour){const rem=Math.max(0,toNum(need)-toNum(have)); if(!rem||!perHour)return'ETA —'; const hours=rem/perHour; const h=Math.floor(hours), m=Math.round((hours-h)*60); return `ETA — ${h? h+'h ' : ''}${m}m`}
+  function refreshXPUI(){
+    ['xp','axp','sk','rxp'].forEach(k=>{ xpd.total[k].textContent=fmt(xpState.totals[k]); xpd.last[k].textContent=fmt(xpState.last[k]); xpd.rate10[k].textContent=fmt(Math.round(rate10(k)))+'/hr'; xpd.rateS[k].textContent=fmt(Math.round(rateSess(k)))+'/hr'; });
+    setBar(xpd.bar.xp,xpState.goals.xp,xpState.totals.xp,xpd.needL.xp);
+    setBar(xpd.bar.axp,xpState.goals.axp,xpState.totals.axp,xpd.needL.axp);
+    setBar(xpd.bar.sk,xpState.goals.sk,xpState.totals.sk,xpd.needL.sk);
+    xpd.eta.xp.textContent=etaStr(xpState.goals.xp,xpState.totals.xp,rate10('xp'));
+    xpd.eta.axp.textContent=etaStr(xpState.goals.axp,xpState.totals.axp,rate10('axp'));
+    xpd.eta.sk.textContent=etaStr(xpState.goals.sk,xpState.totals.sk,rate10('sk'));
+    if(xpState.start){const mins=Math.floor((now()-xpState.start)/60000); xpd.uptime.textContent=`Uptime — ${mins}m`;}
+    xpd.events.textContent=`XP events — ${fmt(xpState.events)}`;
+  }
+  function xpReset(){xpState.start=new Date(); xpState.totals={xp:0,axp:0,sk:0,rxp:0}; xpState.last={xp:0,axp:0,sk:0,rxp:0}; xpState.events=0; xpState.samples={xp:[],axp:[],sk:[],rxp:[]}; xpState.sess={xp:0,axp:0,sk:0,rxp:0}; refreshXPUI(); xpd.feed.innerHTML='<div class="small dim">(XP feed populates as you tail)</div>'}
+  function pushXPFeed(type,val,t){ if(!xpInclude[type]) return; const row=document.createElement('div'); row.className='line'; const pill=document.createElement('span'); pill.className='pill '+type; pill.textContent=type.toUpperCase(); const amt=document.createElement('span'); amt.textContent=' +'+fmt(val); const when=document.createElement('span'); when.className='when'; when.textContent=new Date(t).toLocaleTimeString(); row.appendChild(pill); row.appendChild(amt); row.appendChild(when); xpd.feed.prepend(row); while(xpd.feed.childNodes.length>40) xpd.feed.removeChild(xpd.feed.lastChild); }
+
+  function makeKey(h,l,n){ if((!h||h===0)&&(!l||l===0)){ let x=0; for(let i=0;i<n.length;i++){x=((x<<5)-x)+n.charCodeAt(i); x=x&x;} return 'N:'+Math.abs(x)+':'+n } return h+':'+l+':'+n }
+  function upsert(ev){ const key=makeKey(ev.high,ev.low,ev.name); let s=stats[key]; if(!s) s=stats[key]={key,name:ev.name,high:ev.high,low:ev.low,events:0,kept:0,discarded:0,minql:99999,maxql:0,sampleqls:[],lastSource:null,lastSeen:null}; if(ev.ql&&ev.ql>0){ if(ev.ql<s.minql)s.minql=ev.ql; if(ev.ql>s.maxql)s.maxql=ev.ql; if(s.sampleqls.length<6)s.sampleqls.push(ev.ql); } if(ev.isKept){s.kept++; totalKept++;} if(ev.isDiscarded){s.discarded++; totalDiscarded++;} s.events=s.kept+s.discarded; s.lastSource=ev.source||s.lastSource; s.lastSeen=new Date().toISOString(); }
+
+  function renderTable(){
+    const includeDiscardedInPct=inclDiscardedChk.checked;
+    let pctBase=(includeDiscardedInPct?(totalKept+totalDiscarded):totalKept)||1;
+
+    const q=(eventSearchInp.value||'').toLowerCase().trim();
+    const minEvents=Math.max(0,parseInt(eventMinEventsInp.value||'0',10));
+
+    let arr=Object.values(stats);
+    arr.forEach(s=>{ s.events=s.kept+s.discarded; s.percent=100*s.events/pctBase; s.rarity=rarityOf(s.percent); s.discardedOnly=(s.kept===0&&s.discarded>0); s.keptOnly=(s.discarded===0&&s.kept>0); });
+
+    const rf=rarityFilterSel.value;
+    arr=arr.filter(e=>rf==='all'|| (rf==='uncommon'?['Uncommon','Rare','Epic'].includes(e.rarity): rf==='rare'?['Rare','Epic'].includes(e.rarity): e.rarity==='Epic'));
+
+    if(eventView==='kept') arr=arr.filter(s=>s.kept>0);
+    if(eventView==='discarded') arr=arr.filter(s=>s.discarded>0);
+    if(eventView==='discardonly') arr=arr.filter(s=>s.discardedOnly);
+
+    arr=arr.filter(s=>s.events>=minEvents);
+    if(q) arr=arr.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.lastSource||'').toLowerCase().includes(q));
+
+    const visibleBase = normalizeVisibleChk.checked ? Math.max(1, arr.reduce((a,s)=>a+s.events,0)) : pctBase;
+
+    const sortBy=eventSortBySel.value, dir=eventSortDirSel.value==='asc'?1:-1;
+    arr.sort((a,b)=>{
+      const K={
+        events:[a.events,b.events],percent:[a.events/visibleBase,b.events/visibleBase],kept:[a.kept,b.kept],discarded:[a.discarded,b.discarded],
+        name:[a.name||'',b.name||''],last:[a.lastSeen?Date.parse(a.lastSeen):0,b.lastSeen?Date.parse(b.lastSeen):0]
+      }[sortBy];
+      if(sortBy==='name') return K[0].localeCompare(K[1])*dir;
+      if(K[0]===K[1]) return (a.name||'').localeCompare(b.name||'')*dir;
+      return (K[0]<K[1]?-1:1)*dir;
+    });
+
+    const H={name:36,events:7,kept:8,discarded:8,pct:7,rarity:10,ql:12,src:26};
+    const hdr=pad('Name',H.name)+pad('Events',H.events)+pad('Kept',H.kept)+pad('Discarded',H.discarded)+pad('%',H.pct)+pad('Rarity',H.rarity)+pad('QL',H.ql)+' Last Source | Last\n';
+    const sep='-'.repeat(H.name)+' '+ '-'.repeat(H.events-1)+' '+ '-'.repeat(H.kept-1)+' '+ '-'.repeat(H.discarded-1)+' '+ '-'.repeat(H.pct-1)+' '+ '-'.repeat(H.rarity-1)+' '+ '-'.repeat(H.ql-1)+' '+ '-'.repeat(H.src)+' '+'-----\n';
+    let html=`<pre class="mono">${esc(hdr+sep)}`;
+
+    let sumPct=0;
+    if(!arr.length){ html+=esc('(no rows match filters)\n'); }
+    else{
+      const dim=dimDiscardedOnlyChk.checked;
+      for(const s of arr){
+        const pct=(100*s.events/visibleBase); sumPct+=pct;
+        const ql=s.minql===99999?(s.sampleqls?.[0]??'-'):(s.minql===s.maxql?String(s.minql):`${s.minql}-${s.maxql}`);
+        const row= pad((s.name||'').slice(0,H.name),H.name)+
+                   pad(fmt(s.events),H.events)+
+                   pad(fmt(s.kept),H.kept)+
+                   pad(fmt(s.discarded),H.discarded)+
+                   pad(pct.toFixed(2),H.pct)+
+                   pad(s.rarity,H.rarity)+
+                   pad(ql,H.ql)+
+                   pad((s.lastSource||'-').slice(0,H.src),H.src)+' '+
+                   (s.lastSeen?new Date(s.lastSeen).toLocaleTimeString():'-');
+        html += (dim && s.discardedOnly) ? `<span class="dim">${esc(row)}</span>\n` : `${esc(row)}\n`;
+      }
+    }
+    html+='</pre>';
+    tableEl.innerHTML=html;
+    sumLine.textContent = `Visible % sum: ${arr.length? (sumPct.toFixed(2)+'%'): '—'}`;
+  }
+
+  function parseLine(line){
+    linesRead++; pushRaw(line); pushDebug(`LINE_RX: ${short(line,140)}`);
+    let m=null;
+    if((m=line.match(rxAXP))){const v=toNum(m[1]);if(v){if(xpInclude.axp)pushParsed('axp','+'+fmt(v)+' AXP'); xpPush('axp',v);}}
+    else if((m=line.match(rxSK))){const v=toNum(m[1]);if(v){if(xpInclude.sk)pushParsed('sk','+'+fmt(v)+' SK'); xpPush('sk',v);}}
+    else if((m=line.match(rxRXP))){const v=toNum(m[1]);if(v){if(xpInclude.rxp)pushParsed('rxp','+'+fmt(v)+' Research'); xpPush('rxp',v);}}
+    else if((m=line.match(rxXP))){const v=toNum(m[1]);if(v){if(xpInclude.xp)pushParsed('xp','+'+fmt(v)+' XP'); xpPush('xp',v);}}
+
+    const body=line.replace(/^\s*\[[^\]]*\]\s*/, '').trim();
+    let matches=[],mm;
+    while((mm=rxItemref.exec(body))!==null){
+      const p1=parseInt(mm[1]||'0',10),p2=parseInt(mm[2]||'0',10),ql=parseInt(mm[3]||'0',10),raw=mm[4]||'';
+      let high=0,low=0; if(p2>0){high=Math.max(p1,p2);low=Math.min(p1,p2);} else {high=p1;low=0;}
+      matches.push({high,low,ql,name:htmlDecode(raw).trim()});
+    }
+    if(!matches.length){parseMisses++; updateMetrics(); return;}
+
+    let actionM=body.match(rxAction); let action=actionM?actionM[1].toLowerCase():null;
+    if(!action){const lm=body.match(rxLoose); if(lm) action=lm[1].toLowerCase();}
+    if(!action) action='looted';
+
+    let srcM=body.match(rxSource); let source=srcM?srcM[1].trim().replace(/[.,;:]$/,''):null;
+
+    for(const it of matches){
+      const isDiscarded=/delete/i.test(action);
+      const isKept=/loot|pick|receiv|acquir|add/i.test(action);
+      const ev={name:it.name,ql:it.ql||0,high:it.high,low:it.low,isDiscarded,isKept,source,when:new Date().toISOString()};
+      parseHits++; pushParsed(isDiscarded?'discard':'keep', `${ev.name} | QL:${ev.ql||'-'} | src:${ev.source||'-'}`); upsert(ev);
+    }
+    updateMetrics(); renderTable();
+  }
+
+  function updateMetrics(){ metricsInline.textContent=`lines=${linesRead} hits=${parseHits} misses=${parseMisses} rot=${rotationCount} err=${readErrors} kept=${totalKept} discarded=${totalDiscarded}`; }
+
+  async function readLastLinesFromFile(file, maxLines){
+    const CHUNK = 64 * 1024; // 64KB chunks
+    let pos = file.size;
+    let buffer = '';
+    let lines = [];
+
+    while(pos > 0 && lines.length <= maxLines){
+      const start = Math.max(0, pos - CHUNK);
+      const slice = file.slice(start, pos);
+      const text = await slice.text();
+      buffer = text + buffer;
+      const parts = buffer.split(/\r?\n/);
+      buffer = parts.shift() || '';
+      lines = parts.concat(lines);
+      pos = start;
+    }
+    if(buffer) lines.unshift(buffer);
+    return lines.filter(Boolean).slice(-maxLines);
+  }
+
+  async function loadInitialLines(file){
+    if(MAX_INITIAL_LINES <= 0) return; // Skip if 0
+    try{
+      const lines = await readLastLinesFromFile(file, MAX_INITIAL_LINES);
+      pushDebug(`Loading ${lines.length} initial lines...`);
+      for(const line of lines){
+        if(line && line.trim()) {
+          parseLine(line);
+        }
+      }
+      pushDebug(`Loaded ${lines.length} lines successfully`);
+    }catch(e){
+      pushDebug('LOAD_INITIAL_ERR: '+e);
+      alert('Error loading initial lines: ' + e.message);
+    }
+  }
+
+  async function startTailWithHandle(handle){
+    state.fileHandle=handle; state.fileObj=null; state.isLive=true;
+    try{
+      const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
+      fileInfo.style.display='block';
+      if(MAX_INITIAL_LINES > 0) {
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      } else {
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Starting fresh...`;
+      }
+      if(supportsFS) btnSaveLog.style.display='inline-block';
+      btnRefresh.style.display='inline-block';
+      xpReset();
+
+      // Load initial lines
+      await loadInitialLines(f);
+      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Monitoring (${fmt(f.size)} bytes)`;
+
+      setReading(true);
+      if(state.tailTimer) clearInterval(state.tailTimer);
+      const poll=800;
+      state.tailTimer=setInterval(async ()=>{
+        if(!state.reading||state.paused) return;
+        try{
+          const nf=await handle.getFile(); const size=nf.size;
+          if(size>state.offset){const slice=nf.slice(state.offset,size); const txt=await slice.text(); state.offset=size; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
+          else if(size<state.offset){rotationCount++; state.offset=0; const slice=nf.slice(0,size); const txt=await slice.text(); state.offset=size; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
+        }catch(e){readErrors++; pushDebug('READ_HANDLE_ERR: '+e)}
+      },poll);
+    }catch(e){readErrors++; pushDebug('OPEN_HANDLE_ERR: '+e); alert('Failed to open file handle: '+e);}
+  }
+  async function startTailWithFile(file){
+    state.fileObj=file; state.fileHandle=null; state.isLive=false;
+    try{
+      const size=file.size; state.offset=size; state.startTs=now();
+      fileInfo.style.display='block';
+      if(MAX_INITIAL_LINES > 0) {
+        fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      } else {
+        fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Starting fresh...`;
+      }
+      btnSaveLog.style.display='none';
+      btnRefresh.style.display='inline-block';
+      xpReset();
+
+      // Load initial lines
+      await loadInitialLines(file);
+      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Monitoring (${fmt(size)} bytes)`;
+
+      setReading(true);
+      if(state.tailTimer) clearInterval(state.tailTimer);
+      const poll=1200;
+      state.tailTimer=setInterval(async ()=>{
+        if(!state.reading||state.paused) return;
+        try{
+          const buf=await file.arrayBuffer(); const txt=new TextDecoder().decode(buf);
+          if(txt.length>state.offset){const append=txt.slice(state.offset); state.offset=txt.length; append.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
+          else if(txt.length<state.offset){rotationCount++; state.offset=txt.length; txt.split(/\r?\n/).forEach(ln=>{if(ln&&ln.trim())parseLine(ln)})}
+        }catch(e){readErrors++; pushDebug('POLL_READ_ERR: '+e)}
+      },poll);
+    }catch(e){readErrors++; pushDebug('START_FALLBACK_ERR: '+e)}
+  }
+
+  function setReading(on){ state.reading=on&&!state.paused; document.getElementById('statusText').textContent=state.reading?'Parsing':(state.paused?'Paused':'Idle'); const dot=document.getElementById('dot'); dot.classList.toggle('ok',state.reading); dot.classList.toggle('err',!state.reading); updateMetrics(); }
+  function stopTail(){ if(state.tailTimer) clearInterval(state.tailTimer); state.tailTimer=null; state.reading=false; state.paused=false; setReading(false); }
+
+  const dropEl=document.getElementById('drop');
+  dropEl.addEventListener('click',()=>btnAttach.click());
+  ['dragenter','dragover'].forEach(e=>dropEl.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();dropEl.classList.add('dragover')}));
+  ['dragleave','drop'].forEach(e=>dropEl.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();dropEl.classList.remove('dragover')}));
+  dropEl.addEventListener('drop',async e=>{
+    const f=e.dataTransfer?.files?.[0]; if(!f) return; resetSession(false);
+    const item=e.dataTransfer.items && e.dataTransfer.items[0];
+    if(item && item.getAsFileSystemHandle){try{const h=await item.getAsFileSystemHandle(); if(h && h.kind==='file') return startTailWithHandle(h);}catch{}}
+    startTailWithFile(f);
+  });
+
+  // Browse folder functionality - scan for character folders and their log files
+  async function scanPrefsFolder(dirHandle) {
+    const characters = [];
+
+    try {
+      // Scan for subdirectories (character folders)
+      for await (const entry of dirHandle.values()) {
+        if (entry.kind === 'directory') {
+          // Each folder should be a character name/ID
+          const logFiles = [];
+          try {
+            for await (const file of entry.values()) {
+              if (file.kind === 'file' && file.name.toLowerCase().endsWith('.txt')) {
+                logFiles.push({ handle: file, name: file.name });
+              }
+            }
+          } catch (e) {
+            pushDebug('SCAN_CHAR_ERR: ' + e);
+          }
+
+          if (logFiles.length > 0) {
+            characters.push({
+              name: entry.name,
+              files: logFiles
+            });
+          }
+        }
+      }
+    } catch (e) {
+      pushDebug('SCAN_PREFS_ERR: ' + e);
+    }
+    return characters;
+  }
+
+  btnBrowseFolder.addEventListener('click', async () => {
+    if (!('showDirectoryPicker' in window)) {
+      alert('Folder browsing requires Chrome/Edge browser. Please use "Browse Files" button instead.');
+      return;
+    }
+
+    try {
+      folderInfo.style.display = 'block';
+      folderInfo.innerHTML = '<div style="font-weight:bold;color:var(--muted)">📂 Navigate to your Anarchy Online Prefs folder...<br/><code style="font-size:10px">AppData\\Local\\Funcom\\Anarchy Online\\[UniqueID]\\Anarchy Online\\Prefs</code></div>';
+
+      const dirHandle = await window.showDirectoryPicker();
+      folderInfo.innerHTML = '<div style="font-weight:bold">🔍 Scanning for character logs...</div>';
+
+      const characters = await scanPrefsFolder(dirHandle);
+
+      if (characters.length === 0) {
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">⚠️ No character folders with log files found.<br/><br/>Make sure you selected the "Prefs" folder that contains character subfolders.<br/><br/><span style="font-size:11px">Expected path:<br/><code>...\\Anarchy Online\\Prefs\\</code></span></div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 8000);
+        return;
+      }
+
+      // Display character list
+      let html = '<div style="font-weight:bold;margin-bottom:8px;font-size:13px">✨ Found ' + characters.length + ' character' + (characters.length > 1 ? 's' : '') + ' with logs:</div>';
+      html += '<div style="max-height:200px;overflow:auto;background:var(--face);padding:6px;border:1px solid var(--hi);border-radius:6px">';
+
+      characters.sort((a, b) => a.name.localeCompare(b.name));
+
+      characters.forEach((char, charIdx) => {
+        html += '<div style="margin:8px 0;padding:8px;background:var(--panel);border:1px solid var(--hi);border-radius:4px">';
+        html += '<div style="font-weight:bold;font-size:12px;margin-bottom:4px">👤 ' + esc(char.name) + '</div>';
+
+        char.files.forEach((file, fileIdx) => {
+          const dataIdx = charIdx + '_' + fileIdx;
+          html += '<div style="margin:4px 0 4px 16px">';
+          html += '<button class="btn" style="font-size:11px;padding:3px 10px;margin-right:6px" data-char-idx="' + charIdx + '" data-file-idx="' + fileIdx + '">Open</button>';
+          html += '<span style="font-size:11px;color:var(--muted)">📄 ' + esc(file.name) + '</span>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+      html += '<div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Click "Open" to start monitoring (auto-starts on load)</div>';
+
+      folderInfo.innerHTML = html;
+
+      // Add click handlers to all Open buttons
+      folderInfo.querySelectorAll('button[data-char-idx]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const charIdx = parseInt(btn.getAttribute('data-char-idx'));
+          const fileIdx = parseInt(btn.getAttribute('data-file-idx'));
+          const selectedFile = characters[charIdx].files[fileIdx];
+          resetSession(true);
+          await startTailWithHandle(selectedFile.handle);
+          folderInfo.style.display = 'none';
+        });
+      });
+
+      // Save last directory to localStorage
+      try {
+        localStorage.setItem('xanalytics_last_folder', dirHandle.name);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        pushDebug('FOLDER_PICK_ERR: ' + e);
+        folderInfo.innerHTML = '<div style="color:var(--err);padding:8px">❌ Error: ' + esc(e.message) + '</div>';
+        setTimeout(() => { folderInfo.style.display = 'none'; }, 5000);
+      } else {
+        folderInfo.style.display = 'none';
+      }
+    }
+  });
+
+  btnAttach.addEventListener('click',async ()=>{
+    if('showOpenFilePicker' in window){
+      try{const [h]=await window.showOpenFilePicker({multiple:false}); resetSession(true); await startTailWithHandle(h); folderInfo.style.display='none';}catch(e){pushDebug('PICK_CANCEL/ERR: '+e)}
+    }else{
+      const input=document.createElement('input'); input.type='file';
+      input.addEventListener('change',()=>{const f=input.files?.[0]; if(f){resetSession(true); startTailWithFile(f); folderInfo.style.display='none';}}); input.click();
+    }
+  });
+
+  /* ===== Saved Logs Functions ===== */
+  async function saveCurrentLog(){
+    try{
+      if(!supportsFS){
+        alert('Saved Logs requires Chrome/Edge with FileSystem Access API support.');
+        return;
+      }
+      if(!state.fileHandle){
+        alert('Please use "Find My Logs" to select a file with persistent access first.');
+        return;
+      }
+      const label = prompt('Enter a label for this log (e.g., character name):',  state.currentLabel || '');
+      if(!label) return;
+
+      const rec={
+        id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        label:label.trim(),
+        handle:state.fileHandle,
+        savedAt:new Date().toISOString()
+      };
+      await idbPut(rec);
+      state.currentLabel = label.trim();
+      alert(`✓ Saved log "${label}"`);
+    }catch(e){
+      alert('Error saving log: '+e.message);
+      pushDebug('SAVE_ERR: '+e);
+    }
+  }
+
+  async function loadSavedLog(record){
+    try{
+      const perm = await record.handle.requestPermission({mode:'read'});
+      if(perm!=='granted'){
+        alert('Permission denied. Please select the file again.');
+        return;
+      }
+      const file=await record.handle.getFile();
+      resetSession(true);
+      state.currentLabel = record.label;
+      await startTailWithHandle(record.handle);
+      savedModal.style.display='none';
+    }catch(e){
+      alert('Error loading saved log: '+e.message);
+      pushDebug('LOAD_SAVED_ERR: '+e);
+    }
+  }
+
+  async function openSavedModal(){
+    savedModal.style.display='flex';
+    await renderSavedList();
+  }
+
+  async function renderSavedList(){
+    savedList.textContent='';
+    if(!supportsFS){
+      savedList.innerHTML='<div style="color:var(--muted); text-align:center; padding:20px">Saved Logs requires Chrome/Edge with FileSystem Access API.</div>';
+      savedStatus.textContent='Not supported in this browser';
+      return;
+    }
+    try{
+      const rows=await idbAll();
+      if(rows.length===0){
+        savedList.innerHTML='<div style="color:var(--muted); text-align:center; padding:20px">No saved logs yet. Use "Save This Log" button after loading a file.</div>';
+        savedStatus.textContent='0 saved logs';
+        return;
+      }
+
+      savedStatus.textContent=`${rows.length} saved log${rows.length>1?'s':''}`;
+      rows.sort((a,b)=>a.label.localeCompare(b.label));
+
+      rows.forEach(row=>{
+        const el=document.createElement('div'); el.className='saved-item';
+        const left=document.createElement('div');
+        left.innerHTML=`<div class="saved-label">📁 ${esc(row.label)}</div><div class="saved-path">Saved: ${new Date(row.savedAt).toLocaleDateString()}</div>`;
+        const right=document.createElement('div'); right.className='saved-actions';
+        const load=document.createElement('button'); load.className='btn'; load.textContent='Load';
+        load.onclick=async()=>await loadSavedLog(row);
+        const del=document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
+        del.onclick=async()=>{
+          if(confirm(`Delete "${row.label}"?`)){
+            await idbDel(row.id);
+            await renderSavedList();
+          }
+        };
+        right.appendChild(load); right.appendChild(del);
+        el.appendChild(left); el.appendChild(right);
+        savedList.appendChild(el);
+      });
+    }catch(e){
+      savedList.innerHTML='<div style="color:var(--err); padding:20px">Error loading saved logs: '+esc(e.message)+'</div>';
+      pushDebug('RENDER_SAVED_ERR: '+e);
+    }
+  }
+
+  btnSavedLogs.addEventListener('click',()=>openSavedModal());
+  btnSaveLog.addEventListener('click',()=>saveCurrentLog());
+  savedClose.addEventListener('click',()=>{savedModal.style.display='none'});
+  savedPurge.addEventListener('click',async()=>{
+    if(confirm('Delete ALL saved logs? This cannot be undone.')){
+      await idbClear();
+      await renderSavedList();
+    }
+  });
+
+  btnRefresh.addEventListener('click',async ()=>{
+    try{
+      // Clear current stats
+      for(const k in stats) delete stats[k];
+      totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=0;
+      xpReset(); renderTable(); updateMetrics();
+
+      if(state.fileHandle){
+        const f=await state.fileHandle.getFile();
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Refreshing (loading last ${MAX_INITIAL_LINES} lines)...`;
+        await loadInitialLines(f);
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Refreshed (${fmt(f.size)} bytes)`;
+      }
+      else if(state.fileObj){
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Refreshing (loading last ${MAX_INITIAL_LINES} lines)...`;
+        await loadInitialLines(state.fileObj);
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Refreshed (${fmt(state.fileObj.size)} bytes)`;
+      }
+    }catch(e){
+      pushDebug('REFRESH_ERR: '+e);
+      alert('Error refreshing: ' + e.message);
+    }
+  });
+
+  btnReload.addEventListener('click',async ()=>{
+    try{
+      if(state.fileHandle){
+        const f=await state.fileHandle.getFile();
+        state.offset=f.size;
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Reloaded — Now at EOF (${fmt(f.size)} bytes)`;
+      }
+      else if(state.fileObj){
+        const buf=await state.fileObj.arrayBuffer();
+        state.offset=new TextDecoder().decode(buf).length;
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Reloaded — Now at EOF (${fmt(state.offset)} bytes)`;
+      }
+    }catch(e){pushDebug('RELOAD_ERR: '+e)}
+  });
+
+  btnExportCSV.addEventListener('click',()=>{
+    const includeDiscardedInPct=inclDiscardedChk.checked;
+    let pctBase=(includeDiscardedInPct?(totalKept+totalDiscarded):totalKept)||1;
+    const rows=[['High','Low','Name','Events','Kept','Discarded','Percent','Rarity','MinQL','MaxQL','Samples','LastSource','LastSeen']];
+    for(const k in stats){
+      const s=stats[k]; const events=s.kept+s.discarded; const pct=(100.0*events)/pctBase;
+      rows.push([s.high||0,s.low||0,s.name,events,s.kept,s.discarded,pct.toFixed(2)+'%',s.rarity||rarityOf(pct),s.minql===99999?'':s.minql,s.maxql||'',(s.sampleqls||[]).join(' '),s.lastSource||'',s.lastSeen||'']);
+    }
+    const csv=rows.map(r=>r.map(c=>{const t=String(c??''); return (t.includes('"')||t.includes(',')||t.includes('\n'))?`"${t.replace(/"/g,'""')}"`:t}).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='xanalytics_session.csv'; a.click(); URL.revokeObjectURL(url);
+
+    // Show confirmation
+    const origText = btnExportCSV.textContent;
+    btnExportCSV.textContent = 'Exported!';
+    btnExportCSV.style.background = 'var(--ok)';
+    btnExportCSV.style.color = '#fff';
+    setTimeout(() => {
+      btnExportCSV.textContent = origText;
+      btnExportCSV.style.background = '';
+      btnExportCSV.style.color = '';
+    }, 2000);
+  });
+
+  function exportState(){
+    const prefs={
+      inclDiscarded:inclDiscardedChk.checked, normalizeVisible:normalizeVisibleChk.checked, dimDiscardedOnly:dimDiscardedOnlyChk.checked,
+      rarity:rarityFilterSel.value, sortBy:eventSortBySel.value, sortDir:eventSortDirSel.value,
+      search:eventSearchInp.value, minEvents:toNum(eventMinEventsInp.value), view:eventView,
+      xpInclude:{...xpInclude}, style:styleSel.value
+    };
+    const events=Object.values(stats);
+    const out={ when:new Date().toISOString(), totals:{totalKept,totalDiscarded,linesRead,parseHits,parseMisses,rotationCount,readErrors}, prefs, events, xp:xpState };
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='xanalytics_state.json'; a.click(); URL.revokeObjectURL(url);
+  }
+  document.getElementById('exportState').addEventListener('click',(e)=>{e.preventDefault(); exportState();});
+
+  btnReset.addEventListener('click',()=>{if(confirm('Reset session (clear stats and XP)?')) resetSession(true)});
+
+  // Hidden Log Pane functionality can be triggered by future buttons if desired.
+  // For now, these are not visible to the user to simplify the UI.
+  // const toggleParsed=null, toggleRaw=null, toggleDebug=null;
+  // if(toggleParsed) toggleParsed.addEventListener('click',()=>{const off=parsedLog.style.display!=='none'; parsedLog.style.display=off?'none':''; toggleParsed.textContent=off?'Show Parsed':'Hide Parsed'; if(!parsedLog.innerHTML) parsedLog.innerHTML='<div class="small dim">(parsed lines will appear here)</div>';});
+  // if(toggleRaw) toggleRaw.addEventListener('click',()=>{const off=rawPane.style.display!=='none'; rawPane.style.display=off?'none':''; toggleRaw.textContent=off?'Show Raw':'Hide Raw'; if(!off){const pre=rawPane.querySelector('pre'); pre.textContent=rawLines.slice(-200).join('\n');}});
+  // if(toggleDebug) toggleDebug.addEventListener('click',()=>{const off=debugPane.style.display!=='none'; debugPane.style.display=off?'none':''; toggleDebug.textContent=off?'Show Debug':'Hide Debug'; if(!off){const pre=debugPane.querySelector('pre')||document.createElement('pre'); pre.textContent=debugLog.join('\n'); debugPane.innerHTML=''; debugPane.appendChild(pre);}});
+
+  [inclDiscardedChk,normalizeVisibleChk,dimDiscardedOnlyChk,rarityFilterSel,eventSortBySel,eventSortDirSel,eventSearchInp,eventMinEventsInp].forEach(el=>el.addEventListener('input',renderTable));
+
+  [viewAll,viewKept,viewDiscarded,viewDiscardedOnly].forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      [viewAll,viewKept,viewDiscarded,viewDiscardedOnly].forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      eventView = (btn===viewAll)?'all' : (btn===viewKept)?'kept' : (btn===viewDiscarded)?'discarded' : 'discardonly';
+      renderTable();
+    });
+  });
+
+  ['xp','axp','sk'].forEach(k=>{ xpd.need[k].addEventListener('change',()=>{xpState.goals[k]=toNum(xpd.need[k].value); refreshXPUI();}); });
+  if(fxp && faxp && fsk && frxp) {
+    [fxp,faxp,fsk,frxp].forEach(ch=>ch.addEventListener('change',()=>{xpInclude.xp=fxp.checked; xpInclude.axp=faxp.checked; xpInclude.sk=fsk.checked; xpInclude.rxp=frxp.checked;}));
+  }
+
+  // Theme switching
+  styleSel.addEventListener('change',()=>{
+    document.body.classList.remove('classic','dark','terminal');
+    const theme = styleSel.value;
+    if(theme !== 'classic') document.body.classList.add(theme);
+  });
+
+  // Collapsible Instructions
+  instructionsHeader.addEventListener('click',()=>{
+    instructionsGroup.classList.toggle('collapsed');
+  });
+
+  // Reload lines count setting
+  reloadLinesCount.addEventListener('change',()=>{
+    MAX_INITIAL_LINES = parseInt(reloadLinesCount.value,10);
+  });
+
+  function resetSession(clearStats){
+    if(state.tailTimer){clearInterval(state.tailTimer); state.tailTimer=null;}
+    state.fileHandle=null; state.fileObj=null; state.offset=0; state.reading=false; state.paused=false; state.isLive=false; state.currentLabel='';
+    if(clearStats){
+      for(const k in stats) delete stats[k];
+      totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=rotationCount=readErrors=0;
+      debugLog.length=0; rawLines.length=0; xpReset();
+    }
+    renderTable(); updateMetrics();
+    fileInfo.style.display='none'; folderInfo.style.display='none';
+    btnSaveLog.style.display='none'; btnRefresh.style.display='none';
+    setReading(false);
+  }
+
+  resetSession(true);
+  pushDebug('Xanalytics ready — drop or attach a file');
+})();
+</script>
+</body>
+</html>
