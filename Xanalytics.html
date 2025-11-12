@@ -27,9 +27,21 @@ body.terminal{
   --btn-active-bg: #003300;
 }
 body.terminal .window{box-shadow:none;border:2px solid #00aa00}
+body.terminal .titlebar{background:linear-gradient(90deg,#001a00,#00aa00)}
 body.terminal .group{box-shadow:none;border:1px solid #003300}
 body.terminal .card{box-shadow:none;border:1px solid #003300}
 body.terminal .feed, body.terminal .table, body.terminal .pane{border-color:#003300}
+body.terminal .input, body.terminal select{background:#000;color:#33ff33;border-color:#00aa00}
+body.terminal .btn{background:#002200;color:#33ff33;border-color:#00aa00}
+body.terminal .btn:active{background:#003300}
+body.terminal .drop{background:#000;border-color:#00aa00}
+body.terminal .table{background:#000}
+body.terminal .pane{background:#000}
+body.terminal .pill{background:#001a00;border-color:#00aa00}
+body.terminal .chip{background:#001a00}
+body.terminal .segment{background:#000}
+body.terminal .meter{background:#000}
+body.terminal .statusbar{background:#000;border-color:#00aa00}
 
 .collapsible-header{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
 .collapsible-header::after{content:'▼';font-size:10px;transition:transform .2s}
@@ -164,9 +176,10 @@ label span { cursor: help; }
             </div>
             <div class="toolbar" style="margin-top:6px">
               <button class="btn" id="btnSaveLog" title="Save current log for quick access later" style="display:none">💾 Save This Log</button>
+              <button class="btn" id="btnRefresh" title="Reload the last X lines from current log" style="display:none">🔄 Refresh</button>
               <button class="btn" id="btnReload" title="Jump to end of file (skip older entries)">Skip to End</button>
               <button class="btn" id="btnExportCSV" title="Export statistics as CSV file">Export CSV</button>
-              <button class="btn ghost" id="btnReset" title="Clear all statistics and start fresh">Reset</button>
+              <button class="btn ghost" id="btnReset" title="Unload current log and reset all statistics">Reset All</button>
             </div>
           </div>
           
@@ -187,14 +200,15 @@ label span { cursor: help; }
             <div class="row">
               <label>Lines to load on open/refresh:</label>
               <select id="reloadLinesCount" class="input" style="width:auto">
+                <option value="0" selected>None (0 lines)</option>
                 <option value="25">Last 25</option>
                 <option value="50">Last 50</option>
                 <option value="75">Last 75</option>
                 <option value="100">Last 100</option>
-                <option value="200" selected>Last 200</option>
+                <option value="200">Last 200</option>
               </select>
             </div>
-            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">How many recent log lines to load when opening or refreshing</div>
+            <div class="small" style="margin-left:20px;margin-top:-4px;margin-bottom:8px">How many recent log lines to load when opening or refreshing (0 = start fresh)</div>
 
             <hr style="border:0; border-top: 1px solid var(--hi); margin: 8px 0;">
 
@@ -375,6 +389,7 @@ label span { cursor: help; }
   const btnAttach = document.getElementById('btnAttach');
   const btnSavedLogs = document.getElementById('btnSavedLogs');
   const btnSaveLog = document.getElementById('btnSaveLog');
+  const btnRefresh = document.getElementById('btnRefresh');
   const btnReload = document.getElementById('btnReload');
   const btnExportCSV = document.getElementById('btnExportCSV');
   const btnReset  = document.getElementById('btnReset');
@@ -391,7 +406,7 @@ label span { cursor: help; }
   const reloadLinesCount = document.getElementById('reloadLinesCount');
 
   const supportsFS = 'showOpenFilePicker' in window && 'indexedDB' in window;
-  let MAX_INITIAL_LINES = 200; // Dynamic, updated from settings
+  let MAX_INITIAL_LINES = 0; // Dynamic, updated from settings
 
   const fileInfo = document.getElementById('fileInfo');
 
@@ -678,13 +693,19 @@ label span { cursor: help; }
   }
 
   async function loadInitialLines(file){
+    if(MAX_INITIAL_LINES <= 0) return; // Skip if 0
     try{
       const lines = await readLastLinesFromFile(file, MAX_INITIAL_LINES);
+      pushDebug(`Loading ${lines.length} initial lines...`);
       for(const line of lines){
-        if(line && line.trim()) parseLine(line);
+        if(line && line.trim()) {
+          parseLine(line);
+        }
       }
+      pushDebug(`Loaded ${lines.length} lines successfully`);
     }catch(e){
       pushDebug('LOAD_INITIAL_ERR: '+e);
+      alert('Error loading initial lines: ' + e.message);
     }
   }
 
@@ -693,8 +714,13 @@ label span { cursor: help; }
     try{
       const f=await handle.getFile(); state.offset=f.size; state.startTs=now();
       fileInfo.style.display='block';
-      fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      if(MAX_INITIAL_LINES > 0) {
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      } else {
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Starting fresh...`;
+      }
       if(supportsFS) btnSaveLog.style.display='inline-block';
+      btnRefresh.style.display='inline-block';
       xpReset();
 
       // Load initial lines
@@ -719,8 +745,13 @@ label span { cursor: help; }
     try{
       const size=file.size; state.offset=size; state.startTs=now();
       fileInfo.style.display='block';
-      fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      if(MAX_INITIAL_LINES > 0) {
+        fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Loading last ${MAX_INITIAL_LINES} lines...`;
+      } else {
+        fileInfo.innerHTML=`📁 ${file.name} <span class="status-badge static">STATIC</span> — Starting fresh...`;
+      }
       btnSaveLog.style.display='none';
+      btnRefresh.style.display='inline-block';
       xpReset();
 
       // Load initial lines
@@ -979,6 +1010,30 @@ label span { cursor: help; }
     }
   });
 
+  btnRefresh.addEventListener('click',async ()=>{
+    try{
+      // Clear current stats
+      for(const k in stats) delete stats[k];
+      totalKept=totalDiscarded=0; linesRead=parseHits=parseMisses=0;
+      xpReset(); renderTable(); updateMetrics();
+
+      if(state.fileHandle){
+        const f=await state.fileHandle.getFile();
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Refreshing (loading last ${MAX_INITIAL_LINES} lines)...`;
+        await loadInitialLines(f);
+        fileInfo.innerHTML=`📁 ${f.name} <span class="status-badge live">LIVE</span> — Refreshed (${fmt(f.size)} bytes)`;
+      }
+      else if(state.fileObj){
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Refreshing (loading last ${MAX_INITIAL_LINES} lines)...`;
+        await loadInitialLines(state.fileObj);
+        fileInfo.innerHTML=`📁 ${state.fileObj.name} <span class="status-badge static">STATIC</span> — Refreshed (${fmt(state.fileObj.size)} bytes)`;
+      }
+    }catch(e){
+      pushDebug('REFRESH_ERR: '+e);
+      alert('Error refreshing: ' + e.message);
+    }
+  });
+
   btnReload.addEventListener('click',async ()=>{
     try{
       if(state.fileHandle){
@@ -1082,7 +1137,8 @@ label span { cursor: help; }
       debugLog.length=0; rawLines.length=0; xpReset();
     }
     renderTable(); updateMetrics();
-    fileInfo.style.display='none'; folderInfo.style.display='none'; btnSaveLog.style.display='none';
+    fileInfo.style.display='none'; folderInfo.style.display='none';
+    btnSaveLog.style.display='none'; btnRefresh.style.display='none';
     setReading(false);
   }
 
