@@ -7,10 +7,13 @@ A self-contained, browser-based tool for real-time log file analysis. It uses Ch
 ### Core Features
 
 * **Live File Tailing**: Monitors a local file for changes, reading new data as it's appended. It also gracefully handles log rotation (when a file is cleared and starts over).
+* **Semi-persistent log storage.
 * **Regex-Based Parsing**: Extracts structured data from unstructured log lines using configurable regular expressions. It's pre-configured for Anarchy Online chat logs but can be adapted.
 * **Dynamic UI**: Presents data in a filterable, sortable table and a dashboard for tracking key performance indicators (like XP/hour).
 * **Client-Side Operation**: No data ever leaves your machine. All file reading and processing happens locally in the browser.
 * **Data Export**: Session data can be exported to CSV for external analysis or as a JSON snapshot to save the current state.
+* **Three moody, built in themes.
+* **Collapsable instructions panel, and assorted settings.
 
 ---
 
@@ -24,11 +27,11 @@ A self-contained, browser-based tool for real-time log file analysis. It uses Ch
 *    -Me got XP
 *    -Me got SK
 
-* Step 3: Locate your log file**
+* Step 3: Locate your log file*
     * Navigate to the directory shown in "Show Log Window in AO"
-    * Drag your new log file to the dropzone in Xanalytics
+    * Drag your new log file to the dropzone in Xanalytics (NOTE: If you just created this window/log, you may need to loot something or gain xp to generate the Log.txt)
+    * Name and save your log file to easily load it next time.
     * That's it.
-    * NOTE: If you just created this window/log, you may need to loot something or gain xp to generate the Log.txt
 
 ### Tracking Your XP Gain
 
