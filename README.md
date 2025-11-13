@@ -2,6 +2,8 @@
 
 A self-contained, browser-based tool for real-time log file analysis. It uses Chrome / Edge browser APIs to "tail" local files, parsing new lines as they are written and updating a metrics dashboard in real-time. The entire application is a single HTML file with no dependencies, no build step, and no server-side components.
 
+If you set up DamageDumper back in the day, this is pretty much the same process.
+
 ---
 
 ### Core Features
